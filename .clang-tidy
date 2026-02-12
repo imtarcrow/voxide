@@ -1,0 +1,51 @@
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  performance-*,
+  readability-*,
+  modernize-*,
+  misc-*,
+  cppcoreguidelines-*,
+  google-*,
+  llvm-*,
+  hicpp-*,
+  cert-*,
+
+HeaderFilterRegex: '^(src|include)/'
+
+
+CheckOptions:
+  # Readability: enforce consistent brace style, clarity improvements
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '1'
+
+  # Modernize: automatically suggest smart pointer replacements
+  - key: modernize-use-auto.MinTypeNameLength
+    value: '5'
+
+  # Performance: detect when passing large objects by value
+  - key: performance-move-const-arg.CheckMoveForConstArg
+    value: 'true'
+
+  # cppcoreguidelines: disable warnings that overlap with modernize
+  - key: cppcoreguidelines-pro-bounds-array-to-pointer-decay.IgnoreMacros
+    value: 'true'
+
+  # Disable a few noisy guideline checks
+  - key: cppcoreguidelines-owning-memory.AllowedSmartPointerTypes
+    value: 'std::unique_ptr;std::shared_ptr'
+
+  # HIC++: allow exceptions and dynamic allocation (common in modern code)
+  - key: hicpp-exception-baseclass.AllowedBaseClasses
+    value: 'std::exception'
+
+  # CERT: prefer precision but avoid overstrictness
+  - key: cert-dcl21-cpp.CheckThrowSpecification
+    value: 'false'
+
+  # Google style: avoid naming warnings if you use your own convention
+  - key: google-readability-function-size.StatementThreshold
+    value: '100'
+
+FormatStyle: file
