@@ -12,9 +12,8 @@ class Game {
 
   private:
     std::unique_ptr<Window> window;
-    SDL_GLContext context;
 
-        SDL_Renderer *debug_renderer = nullptr;
+    SDL_Renderer *debug_renderer = nullptr;
 
   public:
     Game();
@@ -27,7 +26,6 @@ class Game {
     // disable moving
     Game(const Game &&) = delete;
     auto operator=(const Game &&) -> Game & = delete;
-
 
     void run();
 };
