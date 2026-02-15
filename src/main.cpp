@@ -1,7 +1,11 @@
+#include "window.hpp"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 #include <memory>
 #include <print>
-#include <SDL3/SDL.h>
-#include "window.hpp"
+
+constexpr int DEFAULT_WIDTH = 800;
+constexpr int DEFAULT_HEIGHT = 800;
 
 auto main() -> int {
 
@@ -9,7 +13,7 @@ auto main() -> int {
 
     if(!SDL_Init(SDL_INIT_VIDEO)) {return 1;}
 
-    std::unique_ptr<Window> window = std::make_unique<Window>(800, 800, "test window");
+    std::unique_ptr<Window> window = std::make_unique<Window>(DEFAULT_WIDTH, DEFAULT_HEIGHT, "test window", SDL_WINDOW_RESIZABLE);
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window->handle(), nullptr);
 
@@ -22,10 +26,12 @@ auto main() -> int {
             }
         }
 
+        auto [width, height] = window->get_size();
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderLine(renderer, 0, 0, 800, 800);
+        SDL_RenderLine(renderer, 0, 0, static_cast<float>(width), static_cast<float>(height));
         SDL_RenderPresent(renderer);
     }
 
