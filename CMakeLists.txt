@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 3.31.10)
 
 project("voxide" VERSION 0.0.1 LANGUAGES CXX)
 
