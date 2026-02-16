@@ -28,10 +28,35 @@ Game::~Game() {
     SDL_Quit();
 }
 
+void Game::init() {
+    
+    glGenBuffers(1, &this->VBO);
+    glGenBuffers(1, &this->EBO);
+
+    glGenVertexArrays(1, &this->VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);    
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *) 0);  // Position
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *) (3 * sizeof(GLfloat)));  // Color
+    glEnableVertexAttribArray(1);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    glEnable(GL_CULL_FACE);
+}
+
 void Game::run() {
     auto [width, height] = this->window->get_size();
     glViewport(0, 0, width, height);
-    
+
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {
