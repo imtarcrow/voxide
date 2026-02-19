@@ -2,15 +2,18 @@
 #ifndef VOXIDE_SHADER_PROGRAM_HEADER
 
 #include "glad/glad.h"
+
 #include <glm/glm.hpp>
+#include <optional>
 #include <string>
 
 class ShaderProgram {
    private:
     GLuint gl_program_handle = 0;
 
-    static auto create_shader(const std::string &path, int type) -> GLuint;
-    static auto load_shader_file(const std::string &path) -> std::string;
+    [[nodiscard]] static auto create_shader(const std::string &filepath, int shader_type) -> std::optional<GLuint>;
+
+    static auto load_shader_file(const std::string &path) -> std::optional<std::string>;
     auto load_and_compile() -> bool;
 
     std::string vertex_shader_path;
@@ -29,7 +32,7 @@ class ShaderProgram {
     auto operator=(ShaderProgram&&) noexcept -> ShaderProgram& = default;   // enable moving
 
     [[nodiscard]] auto use() const -> bool;
-    [[nodiscard]] auto reload() -> bool;
+    auto reload() -> bool;
     void set_uniform(const std::string &name, glm::mat4 value) const;
 };
 
