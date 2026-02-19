@@ -1,11 +1,13 @@
 #pragma once
+#ifndef VOXIDE_GAME_HEADER
+#define VOXIDE_GAME_HEADER
+
 #include "glad/glad.h"
+#include "shader_program.hpp"
 #include "window.hpp"
 
 #include <array>
 #include <memory>
-#ifndef VOXIDE_GAME_HEADER
-#define VOXIDE_GAME_HEADER
 
 constexpr int DEFAULT_WIDTH = 1024;
 constexpr int DEFAULT_HEIGHT = 768;
@@ -59,11 +61,11 @@ class Game {
   private:
     std::unique_ptr<Window> window;
 
-    SDL_Renderer *debug_renderer = nullptr;
-
     GLuint VBO = 0;
     GLuint EBO = 0;
     GLuint VAO = 0;
+
+    std::unique_ptr<ShaderProgram> program;
 
   public:
     Game();

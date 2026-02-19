@@ -4,6 +4,6 @@
 #ifndef VOXIDE_MAIN_HEADER
 #define VOXIDE_MAIN_HEADER
 
-int main(int argc, char** argv);
+auto main(int argc, char** argv) -> int;
 
 #endif // VOXIDE_MAIN_HEADER

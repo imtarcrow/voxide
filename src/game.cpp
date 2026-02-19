@@ -1,12 +1,13 @@
 #include "game.hpp"
 
 #include "glad/glad.h"
+#include "shader_program.hpp"
 
+#include <memory>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
-#include <memory>
 #include <stdexcept>
 
 Game::Game() {
@@ -15,33 +16,28 @@ Game::Game() {
     }
 
     this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
-
-    this->debug_renderer = SDL_CreateRenderer(this->window->get_handle(), nullptr);
 }
 
-Game::~Game() {
-    if (this->debug_renderer != nullptr) {
-        SDL_DestroyRenderer(this->debug_renderer);
-        this->debug_renderer = nullptr;
-    }
-
-    SDL_Quit();
-}
+Game::~Game() { SDL_Quit(); }
 
 void Game::init() {
-    
+
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
 
     glGenVertexArrays(1, &this->VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);    
+    glBindVertexArray(this->VAO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *) 0);  // Position
+    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+                          (GLvoid *) nullptr); // Position
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *) (3 * sizeof(GLfloat)));  // Color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+                          (GLvoid *) (3 * sizeof(GLfloat))); // Color
     glEnableVertexAttribArray(1);
 
     glEnableVertexAttribArray(0);
@@ -49,6 +45,8 @@ void Game::init() {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
 
     glEnable(GL_CULL_FACE);
 }
@@ -58,7 +56,7 @@ void Game::run() {
     glViewport(0, 0, width, height);
 
     this->init();
-    
+
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {
@@ -68,13 +66,15 @@ void Game::run() {
             }
         }
 
-        auto [width, height] = this->window->get_size();
+        glEnable(GL_DEPTH_TEST);
 
-        SDL_SetRenderDrawColor(debug_renderer, 0, 0, 0, 255);
-        SDL_RenderClear(debug_renderer);
-        SDL_SetRenderDrawColor(debug_renderer, 255, 0, 0, 255);
-        SDL_RenderLine(debug_renderer, 0, 0, static_cast<float>(width),
-                       static_cast<float>(height));
-        SDL_RenderPresent(debug_renderer);
+        glClearColor(0, 0, 0.5, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glBindVertexArray(this->VAO);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+
+        SDL_GL_SwapWindow(this->window->get_handle());
+        ::SDL_Delay(1);
     }
 }
