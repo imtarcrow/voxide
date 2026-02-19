@@ -7,17 +7,17 @@
 
 class ShaderProgram {
    private:
-    GLuint program_id;
+    GLuint gl_program_handle = 0;
 
-    static auto createShader(const std::string &path, int type) -> GLuint;
-    static auto readShaderFile(const std::string &path) -> std::string;
-    auto loadAndCompile() -> bool;
+    static auto create_shader(const std::string &path, int type) -> GLuint;
+    static auto load_shader_file(const std::string &path) -> std::string;
+    auto load_and_compile() -> bool;
 
     std::string vertex_shader_path;
     std::string fragment_shader_path;
 
    public:
-    ShaderProgram(const std::string &vertex_shader_path, const std::string &fragment_shader_path);
+    ShaderProgram(std::string vertex_shader_path, std::string fragment_shader_path);
     ~ShaderProgram();
 
     // disable copying
@@ -25,12 +25,12 @@ class ShaderProgram {
     auto operator=(const ShaderProgram &) -> ShaderProgram & = delete;
 
  // Enable cheap moving
-    ShaderProgram(ShaderProgram&&) noexcept            = default;
+    ShaderProgram(ShaderProgram&&) noexcept = default;
     auto operator=(ShaderProgram&&) noexcept -> ShaderProgram& = default;   // enable moving
 
     [[nodiscard]] auto use() const -> bool;
     [[nodiscard]] auto reload() -> bool;
-    void setUniform(const std::string &name, glm::mat4 value) const;
+    void set_uniform(const std::string &name, glm::mat4 value) const;
 };
 
 
