@@ -57,6 +57,8 @@ void Game::run() {
     auto [width, height] = this->window->get_size();
     glViewport(0, 0, width, height);
 
+    this->init();
+    
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {

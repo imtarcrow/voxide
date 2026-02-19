@@ -7,8 +7,8 @@
 #ifndef VOXIDE_GAME_HEADER
 #define VOXIDE_GAME_HEADER
 
-constexpr int DEFAULT_WIDTH = 1280;
-constexpr int DEFAULT_HEIGHT = 960;
+constexpr int DEFAULT_WIDTH = 1024;
+constexpr int DEFAULT_HEIGHT = 768;
 
 constexpr std::array<GLfloat, 48> verticies = {
 
@@ -61,9 +61,9 @@ class Game {
 
     SDL_Renderer *debug_renderer = nullptr;
 
-    GLuint VBO;
-    GLuint EBO;
-    GLuint VAO;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
+    GLuint VAO = 0;
 
   public:
     Game();
