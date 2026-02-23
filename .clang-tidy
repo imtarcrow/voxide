@@ -1,51 +1,123 @@
-Checks: >
-  clang-analyzer-*,
+Checks: '
+  *,
+  -altera-*,
+  -android-*,
+  -darwin-*,
+  -fuchsia-*,
+  -llvmlibc-*,
+  -mpi-*,
+  -objc-*,
+  -openmp-*,
+
   bugprone-*,
-  -bugprone-easily-swappable-parameters,
-  performance-*,
-  readability-*,
-  modernize-*,
-  misc-*,
-  cppcoreguidelines-*,
-  google-*,
-  llvm-*,
-  hicpp-*,
+  -bugprone-easily-swappable-parameters,     # often noisy/false positives
+  -bugprone-exception-escape,                # too strict for many codebases
+  -bugprone-macro-parentheses,               # macro heavy? disable if noisy
+  -bugprone-reserved-identifier,
+
   cert-*,
 
-HeaderFilterRegex: '^(src|include)/'
+  clang-analyzer-*,
+  # Keep full analyzer power as requested; disable specific noisy ones if needed later
+  -clang-analyzer-cplusplus.NewDeleteLeaks,  # sometimes too aggressive with smart ptrs
 
+  concurrency-*,
+
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-c-arrays,                 # OpenGL often uses arrays
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-init-variables,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-no-malloc,                      # GL may need raw alloc
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-owning-memory,                  # too strict for mixed code
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,  # GL uses pointer arith
+  -cppcoreguidelines-pro-type-const-cast,
+  -cppcoreguidelines-pro-type-cstyle-cast,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
+
+  hicpp-*,
+  -hicpp-braces-around-statements,           # clang-format handles
+  -hicpp-explicit-conversions,
+  -hicpp-no-malloc,
+  -hicpp-uppercase-literal-suffix,
+
+  misc-*,
+  -misc-confusable-identifiers,
+  -misc-non-private-member-variables-in-classes,
+
+  modernize-*,
+  -modernize-avoid-bind,
+  -modernize-macro-to-enum,
+  -modernize-pass-by-value,                  # can be noisy
+  -modernize-raw-string-literal,
+
+  performance-*,
+
+  portability-*,
+
+  readability-*,
+  -readability-braces-around-statements,     # clang-format
+  -readability-convert-member-functions-to-static,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-naming,            # we enable below but warn-only
+  -readability-implicit-bool-conversion,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+
+  -google-*,
+  -llvm-*,
+  -abseil-*,
+  -boost-*,
+  -linuxkernel-*,                            # unless you want kernel-specific
+'
 
 CheckOptions:
-  # Readability: enforce consistent brace style, clarity improvements
-  - key: readability-braces-around-statements.ShortStatementLines
-    value: '1'
+  # Header filtering: do NOT analyze third-party / external code
+  - key:             HeaderFilterRegex
+    value:           '^(src|include|your_project_folders_here)/.*$'   # ← Customize this regex!
+  # Example: only analyze files under src/ or include/, ignore everything else
+  # If your third-party is in 'third_party/', 'external/', etc.:
+  # value:           '^((?!third_party|external|vendor|dependencies).)*$'
 
-  # Modernize: automatically suggest smart pointer replacements
-  - key: modernize-use-auto.MinTypeNameLength
-    value: '5'
+  # Naming: warn only, no errors (your request)
+  - key:             readability-identifier-naming.WarningOnly
+    value:           true
+  - key:             readability-identifier-naming.NamespaceCase
+    value:           lower_case
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.StructCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.EnumCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.FunctionCase
+    value:           camelBack
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           UPPER_CASE
+  - key:             readability-identifier-naming.MemberCase
+    value:           lower_case
+  - key:             readability-identifier-naming.PrivateMemberSuffix
+    value:           _
 
-  # Performance: detect when passing large objects by value
-  - key: performance-move-const-arg.CheckMoveForConstArg
-    value: 'true'
+  # Modernize tweaks (push modern but not too hard)
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL,NULLPTR'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           16
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
 
-  # cppcoreguidelines: disable warnings that overlap with modernize
-  - key: cppcoreguidelines-pro-bounds-array-to-pointer-decay.IgnoreMacros
-    value: 'true'
+  # Performance: keep most, but relax some
+  - key:             performance-unnecessary-copy-initialization.AllowConstParameters
+    value:           true
 
-  # Disable a few noisy guideline checks
-  - key: cppcoreguidelines-owning-memory.AllowedSmartPointerTypes
-    value: 'std::unique_ptr;std::shared_ptr'
+WarningsAsErrors: ''   # or '*' if you want strict mode later; empty = warnings only
 
-  # HIC++: allow exceptions and dynamic allocation (common in modern code)
-  - key: hicpp-exception-baseclass.AllowedBaseClasses
-    value: 'std::exception'
-
-  # CERT: prefer precision but avoid overstrictness
-  - key: cert-dcl21-cpp.CheckThrowSpecification
-    value: 'false'
-
-  # Google style: avoid naming warnings if you use your own convention
-  - key: google-readability-function-size.StatementThreshold
-    value: '100'
-
-FormatStyle: file
+FormatStyle:           file   # Use your .clang-format for any style-related fixits

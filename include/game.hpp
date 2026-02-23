@@ -2,63 +2,24 @@
 #ifndef VOXIDE_GAME_HEADER
 #define VOXIDE_GAME_HEADER
 
+#include <array>
+#include <memory>
+
 #include "glad/glad.h"
 #include "shader_program.hpp"
 #include "window.hpp"
 
-#include <array>
-#include <memory>
-
 constexpr int DEFAULT_WIDTH = 1024;
 constexpr int DEFAULT_HEIGHT = 768;
 
-constexpr std::array<GLfloat, 48> verticies = {
+constexpr std::array<GLfloat, 9> verticies = { 0, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0 };
 
-    // Front face (z = 0.5)
-    -0.5F, -0.5F, 0.5F, // Bottom-left
-    0.0F, 0.0F, 0.0F,
+constexpr std::array<GLuint, 3> indices = { 0, 1, 2 };
 
-    0.5F, -0.5F, 0.5F, // Bottom-right
-    1.0F, 0.0F, 0.0F,
+class Game
+{
 
-    0.5F, 0.5F, 0.5F, // Top-right
-    0.0F, 1.0F, 0.0F,
-
-    -0.5F, 0.5F, 0.5F, // Top-left
-    1.0F, 1.0F, 0.0F,
-
-    // Back face (z = -0.5)
-
-    -0.5F, -0.5F, -0.5F, // Bottom-left
-    0.0F, 0.0F, 1.0F,
-
-    0.5F, -0.5F, -0.5F, // Bottom-right
-    1.0F, 0.0F, 1.0F,
-
-    0.5F, 0.5F, -0.5F, // Top-right
-    0.0F, 1.0F, 1.0F,
-
-    -0.5F, 0.5F, -0.5F, // Top-left
-    1.0F, 1.0F, 1.0F};
-
-constexpr std::array<GLuint, 36> indices = {
-    // Front face
-    0, 1, 2, 0, 2, 3,
-    // Back face
-    7, 6, 5, 7, 5, 4,
-    // Left face
-    4, 0, 3, 4, 3, 7,
-    // Right face
-    1, 5, 6, 1, 6, 2,
-    // Top face
-    3, 2, 6, 3, 6, 7,
-    // Bottom face
-    0, 5, 1, 0, 4, 5
-};
-
-class Game {
-
-  private:
+private:
     std::unique_ptr<Window> window;
 
     GLuint VBO = 0;
@@ -67,21 +28,20 @@ class Game {
 
     std::unique_ptr<ShaderProgram> program;
 
-  public:
+public:
     Game();
     ~Game();
 
     // disable copying
-    Game(const Game &) = delete;
-    auto operator=(const Game &) -> Game & = delete;
+    Game(const Game&) = delete;
+    auto operator=(const Game&) -> Game& = delete;
 
     // disable moving
-    Game(const Game &&) = delete;
-    auto operator=(const Game &&) -> Game & = delete;
+    Game(const Game&&) = delete;
+    auto operator=(const Game&&) -> Game& = delete;
 
     void run();
     void init();
 };
-
 
 #endif // !VOXIDE_GAME_HEADER

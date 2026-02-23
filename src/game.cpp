@@ -1,16 +1,17 @@
 #include "game.hpp"
 
-#include "glad/glad.h"
-#include "shader_program.hpp"
-
-#include <memory>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <memory>
 #include <stdexcept>
 
-Game::Game() {
+#include "glad/glad.h"
+#include "shader_program.hpp"
+
+Game::Game()
+{
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         throw std::runtime_error("Failed to initialize SDL3");
     }
@@ -18,9 +19,13 @@ Game::Game() {
     this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
 }
 
-Game::~Game() { SDL_Quit(); }
+Game::~Game()
+{
+    SDL_Quit();
+}
 
-void Game::init() {
+void Game::init()
+{
 
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
@@ -32,16 +37,10 @@ void Game::init() {
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
-                          (GLvoid *) nullptr); // Position
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
-                          (GLvoid *) (3 * sizeof(GLfloat))); // Color
-    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+                          (GLvoid*)nullptr); // Position
 
     glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
@@ -51,7 +50,8 @@ void Game::init() {
     glEnable(GL_CULL_FACE);
 }
 
-void Game::run() {
+void Game::run()
+{
     auto [width, height] = this->window->get_size();
     glViewport(0, 0, width, height);
 

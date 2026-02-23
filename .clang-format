@@ -1,26 +1,77 @@
-BasedOnStyle: LLVM
+BasedOnStyle:     WebKit
+Language:         Cpp
 
-IndentWidth: 4
-TabWidth: 4
-UseTab: Never
+# Basics
+IndentWidth:                  4
+UseTab:                       Never
+TabWidth:                     4
+ColumnLimit:                  140
 
-ColumnLimit: 120
+PointerAlignment:             Left
+ReferenceAlignment:           Pointer
+DerivePointerAlignment:       false
 
-SpaceAfterCStyleCast: true
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine:   Never
+AllowShortLoopsOnASingleLine:          false
+AllowShortCaseLabelsOnASingleLine:     false
+AllowShortFunctionsOnASingleLine:      None
 
-IncludeBlocks: Regroup
-SortIncludes: CaseInsensitive
-SortUsingDeclarations: false
+SpacesInParentheses:          false
+SpacesInAngles:               false
+SpacesInSquareBrackets:       false
+SpacesInContainerLiterals:    false
+SpaceAfterTemplateKeyword:    true
 
-PointerAlignment: Right
-ReferenceAlignment: Right
+BinPackArguments:             true
+BinPackParameters:            true
+PenaltyExcessCharacter:       1000
+PenaltyBreakBeforeFirstCallParameter: 19
 
-MaxEmptyLinesToKeep: 2
+BreakBeforeBraces:            Custom
+BraceWrapping:
+  AfterFunction:              true      
+  AfterControlStatement:      false    
+  AfterClass:                 true
+  AfterStruct:                true
+  AfterEnum:                  false
+  AfterNamespace:             true
+  AfterCaseLabel:             false
+  BeforeElse:                 true
+  BeforeCatch:                true
+  BeforeWhile:                false
+  BeforeLambdaBody:           false
+  IndentBraces:               false
+  SplitEmptyFunction:         true
+  SplitEmptyRecord:           true
+  SplitEmptyNamespace:        true
 
-EmptyLineBeforeAccessModifier: Always
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers:  BinPack
+ConstructorInitializerIndentWidth: 4
 
-ReflowComments: true
-FixNamespaceComments: true
+AccessModifierOffset:         -4
+AlignAfterOpenBracket:        Align
+AlignConsecutiveAssignments:  false
+AlignConsecutiveDeclarations: false
+Standard:                     c++20
 
+SortIncludes:                 true
+IncludeBlocks:                Regroup
+IncludeCategories:
+  - Regex:           '^(<|"(gtest|gmock|benchmark)/)'
+    Priority:        1
+  - Regex:           '^"(third_party|vendor|external)/'
+    Priority:        2
+  - Regex:           '^"(public|include)/'
+    Priority:        3
+  - Regex:           '^".*\.h'
+    Priority:        4
+  - Regex:           '.*'
+    Priority:        5
 
-
+SpaceBeforeCtorInitializerColon: false
+SpaceBeforeInheritanceColon:     false
+SpaceBeforeRangeBasedForLoopColon: true
+FixNamespaceComments:         true
+AlignEscapedNewlines:         Right
