@@ -1,5 +1,6 @@
 #pragma once
 #ifndef VOXIDE_WINDOW_HEADER
+#define VOXIDE_WINDOW_HEADER
 
 #include <SDL3/SDL.h>
 #include <string>
