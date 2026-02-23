@@ -29,8 +29,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ./include)
 find_package(SDL3 REQUIRED CONFIG)
 find_package(OpenGL REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(spdlog REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 OpenGL::GL glm::glm)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 OpenGL::GL glm::glm spdlog::spdlog)
 
 # Disable C++ Compiler extensions 
 set_target_properties(${PROJECT_NAME} PROPERTIES
