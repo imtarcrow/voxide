@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <sstream>
 
 ShaderProgram::ShaderProgram(std::string vertex_shader_path, std::string fragment_shader_path)
@@ -9,6 +10,7 @@ ShaderProgram::ShaderProgram(std::string vertex_shader_path, std::string fragmen
     , fragment_shader_path(std::move(fragment_shader_path))
 {
     if (!this->load_and_compile()) {
+        spdlog::error("Failed to construct Shader Program");
         throw std::runtime_error("Failed to construct Shader Program");
     }
 }
