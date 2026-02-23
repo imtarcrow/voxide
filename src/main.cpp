@@ -6,10 +6,11 @@
 
 #include "game.hpp"
 
-auto main() -> int {
-
+auto main() -> int
+{
     spdlog::info("Starting...");
     std::unique_ptr<Game> game = std::make_unique<Game>();
+    game->init();
     game->run();
 
     return 0;

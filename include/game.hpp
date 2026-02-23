@@ -11,9 +11,9 @@
 
 constexpr int DEFAULT_WIDTH = 1024;
 constexpr int DEFAULT_HEIGHT = 768;
+constexpr int WINDOW_PADDING = 100;
 
-constexpr std::array<GLfloat, 9> verticies = { 0, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0 };
-
+constexpr std::array<GLfloat, 9> verticies = { 0, 1, 0, -1, -1, 0, 1, -1, 0 };
 constexpr std::array<GLuint, 3> indices = { 0, 1, 2 };
 
 class Game
@@ -21,12 +21,11 @@ class Game
 
 private:
     std::unique_ptr<Window> window;
+    std::unique_ptr<ShaderProgram> program;
 
     GLuint VBO = 0;
     GLuint EBO = 0;
     GLuint VAO = 0;
-
-    std::unique_ptr<ShaderProgram> program;
 
 public:
     Game();
