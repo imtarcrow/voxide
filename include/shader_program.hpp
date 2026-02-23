@@ -10,12 +10,12 @@
 class ShaderProgram
 {
 private:
-    GLuint gl_program_handle = 0;
+    GLuint gl_handle = 0;
+
+    auto load_and_compile() -> bool;
 
     [[nodiscard]] static auto create_shader(const std::string& filepath, int shader_type) -> std::optional<GLuint>;
-
     static auto load_shader_file(const std::string& path) -> std::optional<std::string>;
-    auto load_and_compile() -> bool;
 
     std::string vertex_shader_path;
     std::string fragment_shader_path;
