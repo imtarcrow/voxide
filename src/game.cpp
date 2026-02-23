@@ -49,6 +49,7 @@ void Game::init()
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
 
     glEnable(GL_CULL_FACE);
+    glEnable(GL_MULTISAMPLE);
 }
 
 void Game::run()
