@@ -8,8 +8,10 @@
 
 auto main() -> int
 {
+    spdlog::set_level(spdlog::level::trace);
     spdlog::info("Starting...");
     std::unique_ptr<Game> game = std::make_unique<Game>();
+
     game->init();
     game->run();
 
