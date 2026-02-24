@@ -10,38 +10,38 @@ Checks: '
   -openmp-*,
 
   bugprone-*,
-  -bugprone-easily-swappable-parameters,     # often noisy/false positives
-  -bugprone-exception-escape,                # too strict for many codebases
-  -bugprone-macro-parentheses,               # macro heavy? disable if noisy
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -bugprone-macro-parentheses,
   -bugprone-reserved-identifier,
 
   cert-*,
 
   clang-analyzer-*,
-  # Keep full analyzer power as requested; disable specific noisy ones if needed later
-  -clang-analyzer-cplusplus.NewDeleteLeaks,  # sometimes too aggressive with smart ptrs
+  -clang-analyzer-cplusplus.NewDeleteLeaks,
 
   concurrency-*,
 
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-c-arrays,                 # OpenGL often uses arrays
+  -cppcoreguidelines-avoid-c-arrays,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-init-variables,
   -cppcoreguidelines-macro-usage,
-  -cppcoreguidelines-no-malloc,                      # GL may need raw alloc
+  -cppcoreguidelines-no-malloc,
   -cppcoreguidelines-non-private-member-variables-in-classes,
-  -cppcoreguidelines-owning-memory,                  # too strict for mixed code
+  -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
-  -cppcoreguidelines-pro-bounds-pointer-arithmetic,  # GL uses pointer arith
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-const-cast,
   -cppcoreguidelines-pro-type-cstyle-cast,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-prefer-member-initializer
 
   hicpp-*,
-  -hicpp-braces-around-statements,           # clang-format handles
+  -hicpp-braces-around-statements,
   -hicpp-explicit-conversions,
   -hicpp-no-malloc,
   -hicpp-uppercase-literal-suffix,
@@ -53,7 +53,7 @@ Checks: '
   modernize-*,
   -modernize-avoid-bind,
   -modernize-macro-to-enum,
-  -modernize-pass-by-value,                  # can be noisy
+  -modernize-pass-by-value,
   -modernize-raw-string-literal,
 
   performance-*,
@@ -61,10 +61,10 @@ Checks: '
   portability-*,
 
   readability-*,
-  -readability-braces-around-statements,     # clang-format
+  -readability-braces-around-statements,
   -readability-convert-member-functions-to-static,
   -readability-function-cognitive-complexity,
-  -readability-identifier-naming,            # we enable below but warn-only
+  -readability-identifier-naming,
   -readability-implicit-bool-conversion,
   -readability-magic-numbers,
   -readability-named-parameter,
@@ -73,18 +73,12 @@ Checks: '
   -llvm-*,
   -abseil-*,
   -boost-*,
-  -linuxkernel-*,                            # unless you want kernel-specific
+  -linuxkernel-*,
 '
 
 CheckOptions:
-  # Header filtering: do NOT analyze third-party / external code
   - key:             HeaderFilterRegex
-    value:           '^(src|include|your_project_folders_here)/.*$'   # ← Customize this regex!
-  # Example: only analyze files under src/ or include/, ignore everything else
-  # If your third-party is in 'third_party/', 'external/', etc.:
-  # value:           '^((?!third_party|external|vendor|dependencies).)*$'
-
-  # Naming: warn only, no errors (your request)
+    value:           '^(src|include|your_project_folders_here)/.*$'
   - key:             readability-identifier-naming.WarningOnly
     value:           true
   - key:             readability-identifier-naming.NamespaceCase
@@ -106,7 +100,6 @@ CheckOptions:
   - key:             readability-identifier-naming.PrivateMemberSuffix
     value:           _
 
-  # Modernize tweaks (push modern but not too hard)
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL,NULLPTR'
   - key:             modernize-loop-convert.MaxCopySize
@@ -114,10 +107,9 @@ CheckOptions:
   - key:             modernize-loop-convert.MinConfidence
     value:           reasonable
 
-  # Performance: keep most, but relax some
   - key:             performance-unnecessary-copy-initialization.AllowConstParameters
     value:           true
 
-WarningsAsErrors: ''   # or '*' if you want strict mode later; empty = warnings only
+WarningsAsErrors: ''
 
-FormatStyle:           file   # Use your .clang-format for any style-related fixits
+FormatStyle:           file

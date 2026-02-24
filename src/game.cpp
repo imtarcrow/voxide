@@ -1,6 +1,7 @@
 #include "game.hpp"
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
@@ -25,7 +26,7 @@ Game::~Game()
 
 void Game::init()
 {
-    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
+    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
 
     auto [width, height] = this->window->get_size();
     glViewport(WINDOW_PADDING, WINDOW_PADDING, width - (WINDOW_PADDING * 2), height - (WINDOW_PADDING * 2));
@@ -49,7 +50,6 @@ void Game::init()
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
 
     glEnable(GL_CULL_FACE);
-    glEnable(GL_MULTISAMPLE);
 }
 
 void Game::run()
@@ -60,6 +60,9 @@ void Game::run()
     SDL_Event event;
     while (!should_quit) {
         while (SDL_PollEvent(&event)) {
+            if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
+                this->window->handle_event(event.window);
+            }
             if (event.type == SDL_EVENT_QUIT) {
                 should_quit = true;
             }
