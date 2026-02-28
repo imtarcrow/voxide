@@ -19,6 +19,11 @@ Window::Window(const std::string& title, int width, int height, SDL_WindowFlags 
         throw std::runtime_error("Failed to create SDL3 Window!");
     }
 
+    this->visible = (flags & SDL_WINDOW_HIDDEN) == 0;
+    this->resizable = (flags & SDL_WINDOW_RESIZABLE) != 0;
+    this->fullscreen = (flags & SDL_WINDOW_FULLSCREEN) != 0; 
+    this->always_on_top = (flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0;
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -38,6 +43,8 @@ Window::Window(const std::string& title, int width, int height, SDL_WindowFlags 
         spdlog::error("Failed to initialize GLAD!");
         throw std::runtime_error("Failed to initialize GLAD!");
     }
+
+    glViewport(0, 0, width, height);
 }
 
 Window::~Window()
