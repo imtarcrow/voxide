@@ -26,10 +26,7 @@ Game::~Game()
 
 void Game::init()
 {
-    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
-
-    auto [width, height] = this->window->get_size();
-    glViewport(WINDOW_PADDING, WINDOW_PADDING, width - (WINDOW_PADDING * 2), height - (WINDOW_PADDING * 2));
+    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
 
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
