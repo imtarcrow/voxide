@@ -10,7 +10,7 @@
 class ShaderProgram
 {
 private:
-    GLuint gl_handle = 0;
+    GLuint gl_program_id = 0;
 
     auto load_and_compile() -> bool;
 
@@ -30,7 +30,7 @@ public:
 
     // Enable cheap moving
     ShaderProgram(ShaderProgram&&) noexcept = default;
-    auto operator=(ShaderProgram&&) noexcept -> ShaderProgram& = default; // enable moving
+    auto operator=(ShaderProgram&&) noexcept -> ShaderProgram& = default;
 
     [[nodiscard]] auto use() const -> bool;
     auto reload() -> bool;

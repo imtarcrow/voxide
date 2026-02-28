@@ -1,6 +1,7 @@
 #include "shader_program.hpp"
 
 #include <fstream>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <spdlog/spdlog.h>
 #include <sstream>
@@ -58,7 +59,7 @@ auto ShaderProgram::load_and_compile() -> bool
     }
     spdlog::debug("Successfully linked program: vs={}, fs={}", vertex_shader_path, fragment_shader_path);
 
-    this->gl_handle = program_handle;
+    this->gl_program_id = program_handle;
 
     glDeleteShader(vertex_shader.value());
     glDeleteShader(fragment_shader.value());
@@ -125,20 +126,20 @@ auto ShaderProgram::load_shader_file(const std::string& filepath) -> std::option
 
 ShaderProgram::~ShaderProgram()
 {
-    spdlog::trace("Destroying ShaderProgram {}", this->gl_handle);
-    if (this->gl_handle != 0) {
-        glDeleteProgram(this->gl_handle);
-        this->gl_handle = 0;
+    spdlog::trace("Destroying ShaderProgram {}", this->gl_program_id);
+    if (this->gl_program_id != 0) {
+        glDeleteProgram(this->gl_program_id);
+        this->gl_program_id = 0;
     }
 }
 
 [[nodiscard]] auto ShaderProgram::use() const -> bool
 {
-    if (this->gl_handle == 0) {
+    if (this->gl_program_id == 0) {
         return false;
     }
 
-    glUseProgram(this->gl_handle);
+    glUseProgram(this->gl_program_id);
 
     return true;
 }
@@ -146,18 +147,24 @@ ShaderProgram::~ShaderProgram()
 auto ShaderProgram::reload() -> bool
 {
 
-    spdlog::info("Hot-reloading ShaderProgram {}", this->gl_handle);
+    spdlog::info("Hot-reloading ShaderProgram {}", this->gl_program_id);
 
-    assert(this->gl_handle != 0);
-    GLuint old_handle = this->gl_handle;
+    assert(this->gl_program_id != 0);
+    GLuint old_handle = this->gl_program_id;
 
     if (!this->load_and_compile()) {
         spdlog::error("ShaderProgram reload failed, keeping old program");
         return false;
     }
 
-    spdlog::info("ShaderProgram reloaded successfully (new handle={})", this->gl_handle);
-    
+    spdlog::info("ShaderProgram reloaded successfully (new handle={})", this->gl_program_id);
+
     glDeleteProgram(old_handle);
     return true;
+}
+
+void ShaderProgram::set_uniform(const std::string& name, glm::mat4 value) const
+{
+    GLint location = glGetUniformLocation(this->gl_program_id, name.c_str());
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
