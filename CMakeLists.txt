@@ -20,6 +20,7 @@ set(SOURCES
     src/window.cpp
     src/game.cpp
     src/shader_program.cpp
+    src/camera.cpp
     src/glad.c
 )
 

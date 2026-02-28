@@ -5,6 +5,7 @@
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <glm/glm.hpp>
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -26,7 +27,7 @@ Game::~Game()
 
 void Game::init()
 {
-    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
+    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
 
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
@@ -45,8 +46,10 @@ void Game::init()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
+    this->camera = std::make_unique<Camera>(90.0F, glm::vec3(0.0F, 0.0F, 1.0F),
+                                            static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
 
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 }
 
 void Game::run()
@@ -59,6 +62,9 @@ void Game::run()
         while (SDL_PollEvent(&event)) {
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
                 this->window->handle_event(event.window);
+            }
+            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+                this->camera->set_aspect_ratio(static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2));
             }
             if (event.type == SDL_EVENT_QUIT) {
                 should_quit = true;
@@ -79,6 +85,9 @@ void Game::run()
         if (!this->program->use()) {
             spdlog::error("Failed to use Shader Program");
         }
+
+        this->program->set_uniform("view", this->camera->get_view_matrix());
+        this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
         glBindVertexArray(this->VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);

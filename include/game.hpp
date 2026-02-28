@@ -5,13 +5,13 @@
 #include <array>
 #include <memory>
 
+#include "camera.hpp"
 #include "glad/glad.h"
 #include "shader_program.hpp"
 #include "window.hpp"
 
 constexpr int DEFAULT_WIDTH = 1024;
 constexpr int DEFAULT_HEIGHT = 768;
-constexpr int WINDOW_PADDING = 100;
 
 constexpr std::array<GLfloat, 9> verticies = { 0, 1, 0, -1, -1, 0, 1, -1, 0 };
 constexpr std::array<GLuint, 3> indices = { 0, 1, 2 };
@@ -22,6 +22,8 @@ class Game
 private:
     std::unique_ptr<Window> window;
     std::unique_ptr<ShaderProgram> program;
+
+    std::unique_ptr<Camera> camera;
 
     GLuint VBO = 0;
     GLuint EBO = 0;
