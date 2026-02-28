@@ -61,5 +61,4 @@ public:
     [[nodiscard]] auto is_always_on_top() const noexcept -> bool;
 };
 
-
 #endif // !VOXIDE_WINDOW_HEADER
