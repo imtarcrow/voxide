@@ -13,8 +13,32 @@
 constexpr int DEFAULT_WIDTH = 1024;
 constexpr int DEFAULT_HEIGHT = 768;
 
-constexpr std::array<GLfloat, 9> verticies = { 0, 1, 0, -1, -1, 0, 1, -1, 0 };
-constexpr std::array<GLuint, 3> indices = { 0, 1, 2 };
+constexpr std::array<GLuint, 36> indices = {
+    0, 6, 2,
+    0, 4, 6,
+    4, 7, 6,
+    4,5, 7,
+    5, 3, 7,
+    5, 1, 3,
+    1, 2, 3,
+    1, 0, 2,
+    2, 7, 3,
+    2, 6, 7,
+    4, 1, 5,
+    4, 0, 1,
+};
+
+constexpr std::array<GLfloat, 48> verticies = {
+    -0.5, -0.5, -0.5, 0.0, 0.0, 0.0,
+    -0.5, -0.5, +0.5, 0.0, 0.0, 1.0,
+    -0.5, +0.5, -0.5, 0.0, 1.0, 0.0,
+    -0.5, +0.5, +0.5, 0.0, 1.0, 1.0,
+    +0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+    +0.5, -0.5, +0.5, 1.0, 0.0, 1.0,
+    +0.5, +0.5, -0.5, 1.0, 1.0, 0.0,
+    +0.5, +0.5, +0.5, 1.0, 1.0, 1.0,
+};
+
 
 class Game
 {
