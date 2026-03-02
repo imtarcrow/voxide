@@ -5,8 +5,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 
-Camera::Camera(float fovy, glm::vec3 position, float aspect_ratio)
+// forwarding to other constructor
+Camera::Camera(float xpos, float ypos, float zpos, float yaw, float pitch, float fovy, float aspect_ratio) noexcept
+    : Camera(glm::vec3(xpos, ypos, zpos), glm::vec2(yaw, pitch), fovy, aspect_ratio)
+{
+}
+
+Camera::Camera(glm::vec3 position, glm::vec2 angles, float fovy, float aspect_ratio) noexcept
     : position(position)
+    , yaw(angles.x)
+    , pitch(angles.y)
     , fovy(fovy)
     , aspect_ratio(aspect_ratio)
 {
@@ -106,7 +114,7 @@ auto Camera::get_z() const noexcept -> float
     return this->position.z;
 }
 
-auto Camera::get_angles() const noexcept -> std::pair<float, float>
+auto Camera::get_angles() const noexcept -> glm::vec2
 {
     return { this->yaw, this->pitch };
 }
@@ -148,5 +156,5 @@ auto Camera::get_view_matrix() const noexcept -> glm::mat4
 
 auto Camera::get_projection_matrix() const noexcept -> glm::mat4
 {
-    return glm::perspective(glm::radians(this->fovy), this->aspect_ratio, 0.01F, 1000.0F);
+    return glm::perspective(glm::radians(this->fovy), this->aspect_ratio, NEAR_PLANE, FAR_PLANE);
 }

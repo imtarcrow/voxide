@@ -4,7 +4,15 @@
 
 #include <glm/glm.hpp>
 
-constexpr glm::vec3 WORLD_UP = { 0.0, 1.0, 0.0 };
+constexpr glm::vec3 WORLD_UP = { 0.0F, 1.0F, 0.0F };
+
+constexpr float DEFAULT_YAW = -90.0F;
+constexpr float DEFAULT_PITCH = 0.0F;
+constexpr float DEFAULT_FOVY = 90.0F;
+constexpr float DEFAULT_ASPECT_RATIO = 16.0F / 9.0F;
+
+constexpr float NEAR_PLANE = 0.01F;
+constexpr float FAR_PLANE = 1000.0F;
 
 class Camera
 {
@@ -16,8 +24,8 @@ private:
     glm::vec3 front = { 0.0F, 0.0F, -1.0F };
     glm::vec3 right = { 1.0F, 0.0F, 0.0F };
 
-    float yaw = -90.0F;
-    float pitch = 0;
+    float yaw;
+    float pitch;
 
     float sensitivity = 0.1F;
 
@@ -27,7 +35,12 @@ private:
     void update_direction_vectors();
 
 public:
-    Camera(float fovy, glm::vec3 position, float aspect_ratio);
+    explicit Camera(glm::vec3 position, glm::vec2 angles = { DEFAULT_YAW, DEFAULT_PITCH }, float fovy = DEFAULT_FOVY,
+                    float aspect_ratio = DEFAULT_ASPECT_RATIO) noexcept;
+    explicit Camera(float xpos, float ypos, float zpos, float yaw = DEFAULT_YAW, float pitch = DEFAULT_PITCH, float fovy = DEFAULT_FOVY,
+                    float aspect_ratio = DEFAULT_ASPECT_RATIO) noexcept;
+
+    Camera() = delete;
     ~Camera() = default;
 
     // disable copying
@@ -56,7 +69,7 @@ public:
     [[nodiscard]] auto get_y() const noexcept -> float;
     [[nodiscard]] auto get_z() const noexcept -> float;
 
-    [[nodiscard]] auto get_angles() const noexcept -> std::pair<float, float>;
+    [[nodiscard]] auto get_angles() const noexcept -> glm::vec2;
     [[nodiscard]] auto get_yaw() const noexcept -> float;
     [[nodiscard]] auto get_pitch() const noexcept -> float;
 
