@@ -19,6 +19,8 @@ private:
     float yaw = -90.0F;
     float pitch = 0;
 
+    float sensitivity = 0.1F;
+
     float fovy;
     float aspect_ratio;
 
@@ -35,6 +37,8 @@ public:
     // Enable cheap moving
     Camera(Camera&&) noexcept = default;
     auto operator=(Camera&&) noexcept -> Camera& = default;
+
+    void process_mouse_movement(float xoffset, float yoffset, bool constrain_pitch) noexcept;
 
     void set_position(glm::vec3 position) noexcept;
     void set_x(float xpos) noexcept;
@@ -55,6 +59,10 @@ public:
     [[nodiscard]] auto get_angles() const noexcept -> std::pair<float, float>;
     [[nodiscard]] auto get_yaw() const noexcept -> float;
     [[nodiscard]] auto get_pitch() const noexcept -> float;
+
+    [[nodiscard]] auto get_front_vector() const noexcept -> glm::vec3;
+    [[nodiscard]] auto get_up_vector() const noexcept -> glm::vec3;
+    [[nodiscard]] auto get_right_vector() const noexcept -> glm::vec3;
 
     [[nodiscard]] auto get_aspect_ratio() const noexcept -> float;
 

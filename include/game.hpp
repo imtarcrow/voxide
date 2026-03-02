@@ -28,7 +28,6 @@ class Game
 private:
     std::unique_ptr<Window> window;
     std::unique_ptr<ShaderProgram> program;
-
     std::unique_ptr<Camera> camera;
 
     GLuint VBO = 0;

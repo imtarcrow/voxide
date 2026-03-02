@@ -1,5 +1,6 @@
 #include "camera.hpp"
 
+#include <algorithm>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
@@ -23,6 +24,22 @@ void Camera::update_direction_vectors()
     this->front = glm::normalize(new_front);
     this->right = glm::normalize(glm::cross(this->front, WORLD_UP));
     this->up = glm::normalize(glm::cross(this->right, this->front));
+}
+
+void Camera::process_mouse_movement(float xoffset, float yoffset, bool constrain_pitch = true) noexcept
+{
+    xoffset *= this->sensitivity;
+    yoffset *= this->sensitivity;
+
+    this->yaw += xoffset;
+    this->pitch += yoffset;
+
+    if (constrain_pitch) {
+        this->pitch = std::min(this->pitch, 89.99F);
+        this->pitch = std::max(this->pitch, -89.99F);
+    }
+
+    this->update_direction_vectors();
 }
 
 void Camera::set_position(glm::vec3 position) noexcept
@@ -102,6 +119,21 @@ auto Camera::get_yaw() const noexcept -> float
 auto Camera::get_pitch() const noexcept -> float
 {
     return this->pitch;
+}
+
+auto Camera::get_front_vector() const noexcept -> glm::vec3
+{
+    return this->front;
+}
+
+auto Camera::get_up_vector() const noexcept -> glm::vec3
+{
+    return this->up;
+}
+
+auto Camera::get_right_vector() const noexcept -> glm::vec3
+{
+    return this->right;
 }
 
 auto Camera::get_aspect_ratio() const noexcept -> float
