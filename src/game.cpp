@@ -90,9 +90,9 @@ void Game::run()
         }
 
         auto model = glm::mat4(1.0F);
-        model = glm::rotate(model, glm::radians(static_cast<float>(ticks)), glm::vec3(1.0F, 0.3F, 0.5F)); 
+        model = glm::rotate(model, glm::radians(static_cast<float>(ticks)), glm::vec3(1.0F, 0.3F, 0.5F));
 
-        this->program->set_uniform("model", model); 
+        this->program->set_uniform("model", model);
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
