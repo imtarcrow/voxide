@@ -111,23 +111,29 @@ void Game::run()
             this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * 0.02F);
         }
 
-
         glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glBindVertexArray(this->VAO);
 
         if (!this->program->use()) {
             spdlog::error("Failed to use Shader Program");
         }
 
-        auto model = glm::mat4(1.0F);
-        // model = glm::rotate(model, glm::radians(static_cast<float>(ticks)), glm::vec3(1.0F, 0.3F, 0.5F));
-
-        this->program->set_uniform("model", model);
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
-        glBindVertexArray(this->VAO);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                for (int z = 0; z < 10; z++) {
+                    auto model = glm::mat4(1.0F);
+                    model = glm::translate(model, glm::vec3(x, y, z));
+
+                    this->program->set_uniform("model", model);
+                    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+                }
+            }
+        }
 
         SDL_GL_SwapWindow(this->window->get_handle());
         ::SDL_Delay(1);
