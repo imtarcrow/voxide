@@ -37,7 +37,10 @@ Window::Window(const std::string& title, int width, int height, SDL_WindowFlags 
     }
 
     SDL_GL_MakeCurrent(this->window_handle, this->glcontext);
-    SDL_GL_SetSwapInterval(1);
+
+    if (!SDL_GL_SetSwapInterval(1)) {
+        spdlog::warn("Failed to enable VSync: {}", SDL_GetError());
+    }
 
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
         spdlog::error("Failed to initialize GLAD!");
