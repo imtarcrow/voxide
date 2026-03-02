@@ -18,7 +18,15 @@ Camera::Camera(glm::vec3 position, glm::vec2 angles, float fovy, float aspect_ra
     , fovy(fovy)
     , aspect_ratio(aspect_ratio)
 {
+    spdlog::trace("Creating Camera: \n > x={}, y={}, z={}\n > yaw={}, pitch={}\n > fovy={}\n > aspect-ratio={}", position.x, position.y,
+                  position.z, angles.x, angles.y, fovy, aspect_ratio);
+
     this->update_direction_vectors();
+}
+
+Camera::~Camera()
+{
+    spdlog::trace("Destroying Camera");
 }
 
 void Camera::update_direction_vectors()

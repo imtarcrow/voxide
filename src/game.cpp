@@ -6,6 +6,8 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
@@ -64,11 +66,15 @@ void Game::init()
 
 void Game::run()
 {
-    unsigned long long ticks = 0;
+
+    Uint64 last_time = SDL_GetTicks(); 
+
+    float delta_delta_time = 0.0F;
 
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_MOUSE_MOTION) {
                 this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
@@ -84,31 +90,43 @@ void Game::run()
             }
         }
 
-        ticks++;
+        Uint64 current_time = SDL_GetTicks();
+        float delta_time = (current_time - last_time) / 1000.0f;
+        last_time = current_time;
+
+        delta_delta_time += delta_time;
+
+        if(delta_delta_time > 1.0F) {
+            spdlog::trace("Delta time: {:.4f} s", delta_time);
+            delta_delta_time -= 1.0F;
+        }
+
         const bool* keys = SDL_GetKeyboardState(nullptr);
 
+        const float sensitivity = 20.0F;
+
         if (keys[SDL_SCANCODE_W]) {
-            this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * 0.02F);
+            this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * sensitivity * delta_time);
         }
 
         if (keys[SDL_SCANCODE_S]) {
-            this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * 0.02F);
+            this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * sensitivity * delta_time);
         }
 
         if (keys[SDL_SCANCODE_D]) {
-            this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * 0.02F);
+            this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * sensitivity * delta_time);
         }
 
         if (keys[SDL_SCANCODE_A]) {
-            this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * 0.02F);
+            this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * sensitivity * delta_time);
         }
 
         if (keys[SDL_SCANCODE_SPACE]) {
-            this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * 0.02F);
+            this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
         }
 
         if (keys[SDL_SCANCODE_LSHIFT]) {
-            this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * 0.02F);
+            this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
         }
 
         glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -136,7 +154,8 @@ void Game::run()
         }
 
         SDL_GL_SwapWindow(this->window->get_handle());
-        ::SDL_Delay(1);
+
+        // SDL_Delay(1);
     }
 
     SDL_SetWindowRelativeMouseMode(this->window->get_handle(), false);

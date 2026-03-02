@@ -41,7 +41,7 @@ public:
                     float aspect_ratio = DEFAULT_ASPECT_RATIO) noexcept;
 
     Camera() = delete;
-    ~Camera() = default;
+    ~Camera();
 
     // disable copying
     Camera(const Camera&) = delete;
