@@ -52,13 +52,13 @@ void Game::init()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-    this->camera = std::make_unique<Camera>(90.0F, glm::vec3(0.0F, 0.0F, 2.0F),
+    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 2.0F), glm::vec2(-90.0F, 0.0F), 90.0F,
                                             static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
-    
+
     SDL_SetWindowRelativeMouseMode(this->window->get_handle(), true);
 
-    glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -70,7 +70,7 @@ void Game::run()
     SDL_Event event;
     while (!should_quit) {
         while (SDL_PollEvent(&event)) {
-            if(event.type == SDL_EVENT_MOUSE_MOTION) {
+            if (event.type == SDL_EVENT_MOUSE_MOTION) {
                 this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
             }
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
@@ -86,34 +86,33 @@ void Game::run()
 
         ticks++;
         const bool* keys = SDL_GetKeyboardState(nullptr);
-        
-        if(keys[SDL_SCANCODE_W]) {
+
+        if (keys[SDL_SCANCODE_W]) {
             this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * 0.02F);
         }
 
-        if(keys[SDL_SCANCODE_S]) {
+        if (keys[SDL_SCANCODE_S]) {
             this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * 0.02F);
         }
 
-        if(keys[SDL_SCANCODE_D]) {
+        if (keys[SDL_SCANCODE_D]) {
             this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * 0.02F);
         }
 
-        if(keys[SDL_SCANCODE_A]) {
+        if (keys[SDL_SCANCODE_A]) {
             this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * 0.02F);
         }
 
-        if(keys[SDL_SCANCODE_SPACE]) {
+        if (keys[SDL_SCANCODE_SPACE]) {
             this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * 0.02F);
         }
 
-        if(keys[SDL_SCANCODE_LSHIFT]) {
+        if (keys[SDL_SCANCODE_LSHIFT]) {
             this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * 0.02F);
         }
 
-        float zpos = std::sin(static_cast<float>(ticks) / 100.0F);
 
-        glClearColor((zpos / 2), 1.0F, (zpos / 2) + 1, 1.0F);
+        glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!this->program->use()) {
@@ -121,7 +120,7 @@ void Game::run()
         }
 
         auto model = glm::mat4(1.0F);
-        model = glm::rotate(model, glm::radians(static_cast<float>(ticks)), glm::vec3(1.0F, 0.3F, 0.5F));
+        // model = glm::rotate(model, glm::radians(static_cast<float>(ticks)), glm::vec3(1.0F, 0.3F, 0.5F));
 
         this->program->set_uniform("model", model);
         this->program->set_uniform("view", this->camera->get_view_matrix());
@@ -133,7 +132,6 @@ void Game::run()
         SDL_GL_SwapWindow(this->window->get_handle());
         ::SDL_Delay(1);
     }
-
 
     SDL_SetWindowRelativeMouseMode(this->window->get_handle(), false);
 
