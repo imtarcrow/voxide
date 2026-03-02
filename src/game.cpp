@@ -5,6 +5,7 @@
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <memory>
 #include <spdlog/spdlog.h>
@@ -39,14 +40,17 @@ void Game::init()
     glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)nullptr);
     glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-    this->camera = std::make_unique<Camera>(90.0F, glm::vec3(0.0F, 0.0F, 1.0F),
+    this->camera = std::make_unique<Camera>(90.0F, glm::vec3(0.0F, 0.0F, 2.0F),
                                             static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
 
     // glEnable(GL_CULL_FACE);
@@ -73,19 +77,22 @@ void Game::run()
 
         ticks++;
 
+        float zpos = std::sin(static_cast<float>(ticks) / 100.0F);
+        this->camera->set_z(zpos + 2.0F);
+
         glEnable(GL_DEPTH_TEST);
 
-        float red = std::sin(static_cast<float>(ticks) / 100.0F);
-        float green = std::cos(static_cast<float>(ticks) / 100.0F);
-        float blue = std::sin(static_cast<float>(ticks) / 200.0F);
-
-        glClearColor((red + 1) / 2, (green + 1) / 2, (blue + 1) / 2, 1);
+        glClearColor((zpos / 2), 1.0F, (zpos / 2) + 1, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!this->program->use()) {
             spdlog::error("Failed to use Shader Program");
         }
 
+        auto model = glm::mat4(1.0F);
+        model = glm::rotate(model, glm::radians(static_cast<float>(ticks)), glm::vec3(1.0F, 0.3F, 0.5F)); 
+
+        this->program->set_uniform("model", model); 
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
