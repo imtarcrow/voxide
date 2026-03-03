@@ -16,6 +16,7 @@ private:
     bool resizable = false;
     bool fullscreen = false;
     bool always_on_top = false;
+    bool capturing_mouse = false;
 
     std::pair<int, int> position;
     std::pair<int, int> size;
@@ -46,6 +47,7 @@ public:
     void set_resizable(bool resizable) noexcept;
     void set_fullscreen(bool fullscreen) noexcept;
     void set_always_on_top(bool always_on_top) noexcept;
+    void set_capturing_mouse(bool capturing_mouse) noexcept;
 
     [[nodiscard]] auto get_size() const noexcept -> std::pair<int, int>;
     [[nodiscard]] auto get_width() const noexcept -> int;
@@ -59,6 +61,7 @@ public:
     [[nodiscard]] auto is_resizable() const noexcept -> bool;
     [[nodiscard]] auto is_fullscreen() const noexcept -> bool;
     [[nodiscard]] auto is_always_on_top() const noexcept -> bool;
+    [[nodiscard]] auto is_capturing_mouse() const noexcept -> bool;
 };
 
 #endif // !VOXIDE_WINDOW_HEADER

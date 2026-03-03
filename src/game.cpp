@@ -33,6 +33,18 @@ Game::~Game()
     SDL_Quit();
 }
 
+void Game::init_dear_imgui() noexcept
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGuiIO& imgui_io = ImGui::GetIO();
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    ImGui_ImplSDL3_InitForOpenGL(this->window->get_handle(), this->window->get_context());
+    ImGui_ImplOpenGL3_Init();
+}
+
 void Game::init()
 {
     this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
@@ -60,39 +72,70 @@ void Game::init()
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 2.0F), glm::vec2(-90.0F, 0.0F), 90.0F,
                                             static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
 
-    SDL_SetWindowRelativeMouseMode(this->window->get_handle(), true);
-
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    this->window->set_capturing_mouse(true);
+    this->init_dear_imgui();
+}
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+void Game::handle_movement(float delta_time) noexcept
+{
+    const bool* keys = SDL_GetKeyboardState(nullptr);
 
-    ImGui_ImplSDL3_InitForOpenGL(this->window->get_handle(), this->window->get_context());
-    ImGui_ImplOpenGL3_Init();
+    const float sensitivity = 20.0F;
+
+    if (keys[SDL_SCANCODE_W]) {
+        this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * sensitivity * delta_time);
+    }
+
+    if (keys[SDL_SCANCODE_S]) {
+        this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * sensitivity * delta_time);
+    }
+
+    if (keys[SDL_SCANCODE_D]) {
+        this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * sensitivity * delta_time);
+    }
+
+    if (keys[SDL_SCANCODE_A]) {
+        this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * sensitivity * delta_time);
+    }
+
+    if (keys[SDL_SCANCODE_SPACE]) {
+        this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
+    }
+
+    if (keys[SDL_SCANCODE_LSHIFT]) {
+        this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
+    }
 }
 
 void Game::run()
 {
 
     Uint64 last_time = SDL_GetTicks();
-    ImGuiIO& io = ImGui::GetIO();
+
+    ImGuiIO& imgui_io = ImGui::GetIO();
 
     float delta_delta_time = 0.0F;
+
+    int xcount = 10;
+    int ycount = 10;
+    int zcount = 10;
 
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {
         while (SDL_PollEvent(&event)) {
-
-            ImGui_ImplSDL3_ProcessEvent(&event);
-
-            if (event.type == SDL_EVENT_MOUSE_MOTION && !io.WantCaptureMouse) {
+            if (!this->window->is_capturing_mouse()) {
+                ImGui_ImplSDL3_ProcessEvent(&event);
+            }
+            if (event.type == SDL_EVENT_MOUSE_MOTION && this->window->is_capturing_mouse()) {
                 this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
+            }
+            if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
+                this->window->set_capturing_mouse(!this->window->is_capturing_mouse());
             }
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
                 this->window->handle_event(event.window);
@@ -104,48 +147,34 @@ void Game::run()
                 should_quit = true;
             }
         }
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+
+        if (!this->window->is_capturing_mouse()) {
+            ImGui::Begin("Settings", nullptr, 0);
+
+            ImGui::SliderInt("X", &xcount, 0, 100);
+            ImGui::SliderInt("Y", &ycount, 0, 100);
+            ImGui::SliderInt("Z", &zcount, 0, 100);
+
+            ImGui::End();
+        }
 
         Uint64 current_time = SDL_GetTicks();
         float delta_time = (current_time - last_time) / 1000.0f;
         last_time = current_time;
+
+        if (this->window->is_capturing_mouse()) {
+            this->handle_movement(delta_time);
+        }
 
         delta_delta_time += delta_time;
 
         if (delta_delta_time > 1.0F) {
             spdlog::trace("Delta time: {:.4f} s", delta_time);
             delta_delta_time -= 1.0F;
-        }
-
-        const bool* keys = SDL_GetKeyboardState(nullptr);
-
-        const float sensitivity = 20.0F;
-
-        if (keys[SDL_SCANCODE_W] && !io.WantCaptureKeyboard) {
-            this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * sensitivity * delta_time);
-        }
-
-        if (keys[SDL_SCANCODE_S] && !io.WantCaptureKeyboard) {
-            this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * sensitivity * delta_time);
-        }
-
-        if (keys[SDL_SCANCODE_D] && !io.WantCaptureKeyboard) {
-            this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * sensitivity * delta_time);
-        }
-
-        if (keys[SDL_SCANCODE_A] && !io.WantCaptureKeyboard) {
-            this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * sensitivity * delta_time);
-        }
-
-        if (keys[SDL_SCANCODE_SPACE] && !io.WantCaptureKeyboard) {
-            this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
-        }
-
-        if (keys[SDL_SCANCODE_LSHIFT] && !io.WantCaptureKeyboard) {
-            this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
         }
 
         glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -160,11 +189,11 @@ void Game::run()
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
-        for (int x = 0; x < 10; x++) {
-            for (int y = 0; y < 10; y++) {
-                for (int z = 0; z < 10; z++) {
+        for (int xpos = 0; xpos < xcount; xpos++) {
+            for (int ypos = 0; ypos < ycount; ypos++) {
+                for (int zpos = 0; zpos < zcount; zpos++) {
                     auto model = glm::mat4(1.0F);
-                    model = glm::translate(model, glm::vec3(x, y, z));
+                    model = glm::translate(model, glm::vec3(xpos, ypos, zpos));
 
                     this->program->set_uniform("model", model);
                     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
