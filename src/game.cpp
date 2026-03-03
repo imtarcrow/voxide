@@ -11,6 +11,9 @@
 #include <SDL3/SDL_video.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_sdl3.h>
+#include <imgui/imgui.h>
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -62,21 +65,33 @@ void Game::init()
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    ImGui_ImplSDL3_InitForOpenGL(this->window->get_handle(), this->window->get_context());
+    ImGui_ImplOpenGL3_Init();
 }
 
 void Game::run()
 {
 
-    Uint64 last_time = SDL_GetTicks(); 
+    Uint64 last_time = SDL_GetTicks();
+    ImGuiIO& io = ImGui::GetIO();
 
     float delta_delta_time = 0.0F;
 
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {
-
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_MOUSE_MOTION) {
+
+            ImGui_ImplSDL3_ProcessEvent(&event);
+
+            if (event.type == SDL_EVENT_MOUSE_MOTION && !io.WantCaptureMouse) {
                 this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
             }
             if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
@@ -89,6 +104,10 @@ void Game::run()
                 should_quit = true;
             }
         }
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
 
         Uint64 current_time = SDL_GetTicks();
         float delta_time = (current_time - last_time) / 1000.0f;
@@ -96,7 +115,7 @@ void Game::run()
 
         delta_delta_time += delta_time;
 
-        if(delta_delta_time > 1.0F) {
+        if (delta_delta_time > 1.0F) {
             spdlog::trace("Delta time: {:.4f} s", delta_time);
             delta_delta_time -= 1.0F;
         }
@@ -105,27 +124,27 @@ void Game::run()
 
         const float sensitivity = 20.0F;
 
-        if (keys[SDL_SCANCODE_W]) {
+        if (keys[SDL_SCANCODE_W] && !io.WantCaptureKeyboard) {
             this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * sensitivity * delta_time);
         }
 
-        if (keys[SDL_SCANCODE_S]) {
+        if (keys[SDL_SCANCODE_S] && !io.WantCaptureKeyboard) {
             this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * sensitivity * delta_time);
         }
 
-        if (keys[SDL_SCANCODE_D]) {
+        if (keys[SDL_SCANCODE_D] && !io.WantCaptureKeyboard) {
             this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * sensitivity * delta_time);
         }
 
-        if (keys[SDL_SCANCODE_A]) {
+        if (keys[SDL_SCANCODE_A] && !io.WantCaptureKeyboard) {
             this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * sensitivity * delta_time);
         }
 
-        if (keys[SDL_SCANCODE_SPACE]) {
+        if (keys[SDL_SCANCODE_SPACE] && !io.WantCaptureKeyboard) {
             this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
         }
 
-        if (keys[SDL_SCANCODE_LSHIFT]) {
+        if (keys[SDL_SCANCODE_LSHIFT] && !io.WantCaptureKeyboard) {
             this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
         }
 
@@ -152,11 +171,17 @@ void Game::run()
                 }
             }
         }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         SDL_GL_SwapWindow(this->window->get_handle());
 
-        // SDL_Delay(1);
+        SDL_Delay(1);
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 
     SDL_SetWindowRelativeMouseMode(this->window->get_handle(), false);
 
