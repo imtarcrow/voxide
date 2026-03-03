@@ -34,6 +34,9 @@ private:
     GLuint EBO = 0;
     GLuint VAO = 0;
 
+    void handle_movement(float delta_time) noexcept;
+    void init_dear_imgui() noexcept;
+
 public:
     Game();
     ~Game();

@@ -1,4 +1,5 @@
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_video.h>
 #include <spdlog/spdlog.h>
@@ -7,6 +8,7 @@
 #include <window.hpp>
 
 #include "glad/glad.h"
+
 
 Window::Window(const std::string& title, int width, int height, SDL_WindowFlags flags)
 {
@@ -23,6 +25,9 @@ Window::Window(const std::string& title, int width, int height, SDL_WindowFlags 
     this->resizable = (flags & SDL_WINDOW_RESIZABLE) != 0;
     this->fullscreen = (flags & SDL_WINDOW_FULLSCREEN) != 0;
     this->always_on_top = (flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0;
+    this->capturing_mouse = false;
+
+    SDL_SetHint("SDL_HINT_MOUSE_RELATIVE_MODE_CENTER", "1");
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 
@@ -147,6 +152,11 @@ void Window::set_always_on_top(bool always_on_top) noexcept
     this->always_on_top = always_on_top;
 }
 
+void Window::set_capturing_mouse(bool capturing_mouse) noexcept {
+    SDL_SetWindowRelativeMouseMode(this->window_handle, capturing_mouse);
+    this->capturing_mouse = capturing_mouse;
+}
+
 auto Window::get_size() const noexcept -> std::pair<int, int>
 {
     return this->size;
@@ -195,4 +205,9 @@ auto Window::is_fullscreen() const noexcept -> bool
 auto Window::is_always_on_top() const noexcept -> bool
 {
     return this->always_on_top;
+}
+
+auto Window::is_capturing_mouse() const noexcept -> bool
+{
+    return this->capturing_mouse;
 }
