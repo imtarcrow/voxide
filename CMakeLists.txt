@@ -14,6 +14,7 @@ set_source_files_properties(
     PROPERTIES
     COMPILE_OPTIONS "-w"
 )
+
 # Setup project files
 set(SOURCES 
     src/main.cpp
@@ -21,11 +22,20 @@ set(SOURCES
     src/game.cpp
     src/shader_program.cpp
     src/camera.cpp
+    
     src/glad.c
+
+    src/imgui/imgui.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_tables.cpp
+    src/imgui/imgui_widgets.cpp
+    src/imgui/backends/imgui_impl_opengl3.cpp
+    src/imgui/backends/imgui_impl_sdl3.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE ./include)
+target_include_directories(${PROJECT_NAME} PRIVATE ./include ./include/imgui ./include/imgui/backends)
 
 find_package(SDL3 REQUIRED CONFIG)
 find_package(OpenGL REQUIRED)
