@@ -155,9 +155,9 @@ void Game::run()
         if (!this->window->is_capturing_mouse()) {
             ImGui::Begin("Settings", nullptr, 0);
 
-            ImGui::SliderInt("X", &xcount, 0, 100);
-            ImGui::SliderInt("Y", &ycount, 0, 100);
-            ImGui::SliderInt("Z", &zcount, 0, 100);
+            ImGui::DragInt("X", &xcount, 1, 0, 100);
+            ImGui::DragInt("Y", &ycount, 1, 0, 100);
+            ImGui::DragInt("Z", &zcount, 1, 0, 100);
 
             ImGui::End();
         }
