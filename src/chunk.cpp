@@ -2,6 +2,7 @@
 
 #include <glm/fwd.hpp>
 #include <print>
+#include <random>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -25,6 +26,7 @@ Chunk::Chunk(glm::ivec3 position)
     }
 
     this->blocks.fill(1);
+
     this->gen_chunk_mesh();
 }
 
@@ -75,7 +77,6 @@ void Chunk::gen_chunk_mesh()
 
                 // X+ facing
                 if (this->get_block_at({ xpos + 1, ypos, zpos }) == 0) {
-                    spdlog::trace("PUSCH X+ {} {} {}", xpos, ypos, zpos);
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -99,10 +100,9 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(ypos) + 0.5F);
                     verticies.push_back(static_cast<float>(zpos) - 0.5F);
                 }
-                
-                //X- facing
+
+                // X- facing
                 if (this->get_block_at({ xpos - 1, ypos, zpos }) == 0) {
-                    spdlog::trace("PUSCH X- {} {} {}", xpos, ypos, zpos);
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -127,9 +127,8 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(zpos) + 0.5F);
                 }
 
-                //Z+ facing
-                if (this->get_block_at({ xpos, ypos, zpos + 1}) == 0) {
-                    spdlog::trace("PUSCH Z+ {} {} {}", xpos, ypos, zpos);
+                // Z+ facing
+                if (this->get_block_at({ xpos, ypos, zpos + 1 }) == 0) {
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -154,9 +153,8 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(zpos) + 0.5F);
                 }
 
-                //Z- facing
+                // Z- facing
                 if (this->get_block_at({ xpos, ypos, zpos - 1 }) == 0) {
-                    spdlog::trace("PUSCH Z- {} {} {}", xpos, ypos, zpos);
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -179,11 +177,10 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(xpos) - 0.5F);
                     verticies.push_back(static_cast<float>(ypos) + 0.5F);
                     verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }  
+                }
 
-                //Y+ facing
-                if (this->get_block_at({ xpos, ypos + 1, zpos}) == 0) {
-                    spdlog::trace("PUSCH Y+ {} {} {}", xpos, ypos, zpos);
+                // Y+ facing
+                if (this->get_block_at({ xpos, ypos + 1, zpos }) == 0) {
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -206,11 +203,10 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(xpos) - 0.5F);
                     verticies.push_back(static_cast<float>(ypos) + 0.5F);
                     verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }  
-                
-                //Y- facing
-                if (this->get_block_at({ xpos, ypos - 1, zpos}) == 0) {
-                    spdlog::trace("PUSCH Y- {} {} {}", xpos, ypos, zpos);
+                }
+
+                // Y- facing
+                if (this->get_block_at({ xpos, ypos - 1, zpos }) == 0) {
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -233,24 +229,10 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(xpos) + 0.5F);
                     verticies.push_back(static_cast<float>(ypos) - 0.5F);
                     verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }  
+                }
             }
         }
     }
-
-    std::println("Verticies: ");
-    for (auto& vert : verticies) {
-        std::print("{} ", vert);
-    }
-    std::println("");
-    std::println("");
-
-    std::println("Indicies: ");
-    for (auto& inds : indicies) {
-        std::print("{} ", inds);
-    }
-    std::println("");
-    std::println("");
 
     glBindVertexArray(this->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);

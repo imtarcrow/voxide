@@ -70,7 +70,7 @@ void Game::init()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, inds2.size() * sizeof(GLuint), inds2.data(), GL_STATIC_DRAW);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-    this->camera = std::make_unique<Camera>(glm::vec3(2.0F, 0.0F, 0.0F), glm::vec2(180.0F, 0.0F), 90.0F,
+    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
                                             static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
 
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
