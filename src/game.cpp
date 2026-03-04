@@ -9,6 +9,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
+#include <format>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -113,12 +114,7 @@ void Game::handle_movement(float delta_time) noexcept
 
 void Game::run()
 {
-
     Uint64 last_time = SDL_GetTicks();
-
-    ImGuiIO& imgui_io = ImGui::GetIO();
-
-    float delta_delta_time = 0.0F;
 
     int xcount = 10;
     int ycount = 10;
@@ -164,18 +160,31 @@ void Game::run()
 
         Uint64 current_time = SDL_GetTicks();
         float delta_time = (current_time - last_time) / 1000.0f;
+
+        this->frame_data.frame_times.push_back(delta_time);
+        this->frame_data.time_passed += delta_time;
+
+        if (this->frame_data.time_passed > 5.0F) {
+            float average_time = 0;
+
+            for(auto it = this->frame_data.frame_times.begin(); it <= this->frame_data.frame_times.end(); it++) {
+                average_time += *it;
+                
+            }
+
+            average_time /= static_cast<float>(this->frame_data.frame_times.size());
+
+            spdlog::trace("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.frame_times.size(), average_time, 1 / average_time);
+            this->frame_data.time_passed -= 5.0F;
+            this->frame_data.frame_times.clear();
+        }
+
         last_time = current_time;
 
         if (this->window->is_capturing_mouse()) {
             this->handle_movement(delta_time);
         }
 
-        delta_delta_time += delta_time;
-
-        if (delta_delta_time > 1.0F) {
-            spdlog::trace("Delta time: {:.4f} s", delta_time);
-            delta_delta_time -= 1.0F;
-        }
 
         glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

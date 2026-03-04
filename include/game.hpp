@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #ifndef VOXIDE_GAME_HEADER
 #define VOXIDE_GAME_HEADER
 
@@ -22,6 +23,11 @@ constexpr std::array<GLfloat, 48> verticies = {
     +0.5, -0.5, -0.5, 1.0, 0.0, 0.0, +0.5, -0.5, +0.5, 1.0, 0.0, 1.0, +0.5, +0.5, -0.5, 1.0, 1.0, 0.0, +0.5, +0.5, +0.5, 1.0, 1.0, 1.0,
 };
 
+using FrameData = struct FrameData {
+    float time_passed;
+    std::vector<float> frame_times;
+};
+
 class Game
 {
 
@@ -29,6 +35,8 @@ private:
     std::unique_ptr<Window> window;
     std::unique_ptr<ShaderProgram> program;
     std::unique_ptr<Camera> camera;
+
+    FrameData frame_data;
 
     GLuint VBO = 0;
     GLuint EBO = 0;
