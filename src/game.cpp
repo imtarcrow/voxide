@@ -57,7 +57,7 @@ void Game::init()
     glBindVertexArray(this->VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, verts2.size() * sizeof(GLfloat), verts2.data(), GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)nullptr);
@@ -67,11 +67,13 @@ void Game::init()
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, inds2.size() * sizeof(GLuint), inds2.data(), GL_STATIC_DRAW);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 2.0F), glm::vec2(-90.0F, 0.0F), 90.0F,
+    this->camera = std::make_unique<Camera>(glm::vec3(2.0F, 0.0F, 0.0F), glm::vec2(180.0F, 0.0F), 90.0F,
                                             static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
+
+    this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
 
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
@@ -116,9 +118,9 @@ void Game::run()
 {
     Uint64 last_time = SDL_GetTicks();
 
-    int xcount = 10;
-    int ycount = 10;
-    int zcount = 10;
+    int xcount = 1;
+    int ycount = 1;
+    int zcount = 1;
 
     bool should_quit = false;
     SDL_Event event;
@@ -158,6 +160,11 @@ void Game::run()
             ImGui::End();
         }
 
+        ImGui::Begin("Info", nullptr, 0);
+        ImGui::Text("Position: X: %.2f Y: %.2f Z: %.2f", this->camera->get_x(), this->camera->get_y(), this->camera->get_z());
+        ImGui::Text("Orientation: Yaw: %.2f Pitch: %.2f", this->camera->get_yaw(), this->camera->get_pitch());
+        ImGui::End();
+
         Uint64 current_time = SDL_GetTicks();
         float delta_time = (current_time - last_time) / 1000.0f;
 
@@ -167,14 +174,14 @@ void Game::run()
         if (this->frame_data.time_passed > 5.0F) {
             float average_time = 0;
 
-            for(auto it = this->frame_data.frame_times.begin(); it <= this->frame_data.frame_times.end(); it++) {
+            for (auto it = this->frame_data.frame_times.begin(); it <= this->frame_data.frame_times.end(); it++) {
                 average_time += *it;
-                
             }
 
             average_time /= static_cast<float>(this->frame_data.frame_times.size());
 
-            spdlog::trace("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.frame_times.size(), average_time, 1 / average_time);
+            spdlog::trace("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.frame_times.size(),
+                          average_time, 1 / average_time);
             this->frame_data.time_passed -= 5.0F;
             this->frame_data.frame_times.clear();
         }
@@ -184,7 +191,6 @@ void Game::run()
         if (this->window->is_capturing_mouse()) {
             this->handle_movement(delta_time);
         }
-
 
         glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -205,10 +211,14 @@ void Game::run()
                     model = glm::translate(model, glm::vec3(xpos, ypos, zpos));
 
                     this->program->set_uniform("model", model);
-                    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+                    // glDrawElements(GL_TRIANGLES, inds2.size(), GL_UNSIGNED_INT, nullptr);
                 }
             }
         }
+
+        glBindVertexArray(this->chunk->VAO);
+        glDrawElements(GL_TRIANGLES, this->chunk->indicies_size, GL_UNSIGNED_INT, nullptr);
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
