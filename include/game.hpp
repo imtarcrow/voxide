@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "chunk.hpp"
 #ifndef VOXIDE_GAME_HEADER
 #define VOXIDE_GAME_HEADER
 
@@ -23,7 +24,28 @@ constexpr std::array<GLfloat, 48> verticies = {
     +0.5, -0.5, -0.5, 1.0, 0.0, 0.0, +0.5, -0.5, +0.5, 1.0, 0.0, 1.0, +0.5, +0.5, -0.5, 1.0, 1.0, 0.0, +0.5, +0.5, +0.5, 1.0, 1.0, 1.0,
 };
 
-using FrameData = struct FrameData {
+constexpr std::array<GLfloat, 24> verts2 = {
+    0.5, 0.5, 0.5,
+    0.0, 0.0, 1.0,
+
+    0.5, -0.5, 0.5,
+    0.0, 1.0, 0.0,
+
+    0.5, -0.5, -0.5,
+    0.0, 1.0, 1.0,
+
+    0.5, 0.5, -0.5,
+    1.0, 0.0, 0.0,
+};
+
+constexpr std::array<GLuint, 6> inds2 = {
+    0, 1, 3,
+    1, 2, 3,
+};
+
+
+using FrameData = struct FrameData
+{
     float time_passed;
     std::vector<float> frame_times;
 };
@@ -37,6 +59,8 @@ private:
     std::unique_ptr<Camera> camera;
 
     FrameData frame_data;
+
+    std::unique_ptr<Chunk> chunk;
 
     GLuint VBO = 0;
     GLuint EBO = 0;
