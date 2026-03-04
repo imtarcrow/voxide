@@ -89,12 +89,12 @@ void Window::handle_event(SDL_WindowEvent event) noexcept
         break;
     case SDL_EVENT_WINDOW_MOVED:
         this->position = { event.data1, event.data2 };
-        spdlog::trace("Window moved to x={}, y={}", event.data1, event.data2);
+        // spdlog::trace("Window moved to x={}, y={}", event.data1, event.data2);
         break;
     case SDL_EVENT_WINDOW_RESIZED:
         this->size = { event.data1, event.data2 };
         glViewport(0, 0, event.data1, event.data2);
-        spdlog::trace("Window resized to w={}, h={}", event.data1, event.data2);
+        // spdlog::trace("Window resized to w={}, h={}", event.data1, event.data2);
         break;
     case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
         this->fullscreen = true;
