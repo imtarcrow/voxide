@@ -79,6 +79,7 @@ void Game::init()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     this->window->set_capturing_mouse(true);
     this->init_dear_imgui();
 }

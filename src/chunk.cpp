@@ -24,8 +24,7 @@ Chunk::Chunk(glm::ivec3 position)
         throw std::runtime_error("glGenVertexArrays returned GL_INVALID_VALUE");
     }
 
-    this->blocks[0] = 1;
-    this->blocks[1] = 1;
+    this->blocks.fill(1);
     this->gen_chunk_mesh();
 }
 
@@ -76,7 +75,7 @@ void Chunk::gen_chunk_mesh()
 
                 // X+ facing
                 if (this->get_block_at({ xpos + 1, ypos, zpos }) == 0) {
-                    spdlog::trace("PUSCH");
+                    spdlog::trace("PUSCH X+ {} {} {}", xpos, ypos, zpos);
                     indicies.push_back((verticies.size() / 3) + 0);
                     indicies.push_back((verticies.size() / 3) + 1);
                     indicies.push_back((verticies.size() / 3) + 2);
@@ -100,6 +99,141 @@ void Chunk::gen_chunk_mesh()
                     verticies.push_back(static_cast<float>(ypos) + 0.5F);
                     verticies.push_back(static_cast<float>(zpos) - 0.5F);
                 }
+                
+                //X- facing
+                if (this->get_block_at({ xpos - 1, ypos, zpos }) == 0) {
+                    spdlog::trace("PUSCH X- {} {} {}", xpos, ypos, zpos);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 1);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 3);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+                }
+
+                //Z+ facing
+                if (this->get_block_at({ xpos, ypos, zpos + 1}) == 0) {
+                    spdlog::trace("PUSCH Z+ {} {} {}", xpos, ypos, zpos);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 1);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 3);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+                }
+
+                //Z- facing
+                if (this->get_block_at({ xpos, ypos, zpos - 1 }) == 0) {
+                    spdlog::trace("PUSCH Z- {} {} {}", xpos, ypos, zpos);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 1);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 3);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+                }  
+
+                //Y+ facing
+                if (this->get_block_at({ xpos, ypos + 1, zpos}) == 0) {
+                    spdlog::trace("PUSCH Y+ {} {} {}", xpos, ypos, zpos);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 1);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 3);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+                }  
+                
+                //Y- facing
+                if (this->get_block_at({ xpos, ypos - 1, zpos}) == 0) {
+                    spdlog::trace("PUSCH Y- {} {} {}", xpos, ypos, zpos);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 1);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 0);
+                    indicies.push_back((verticies.size() / 3) + 2);
+                    indicies.push_back((verticies.size() / 3) + 3);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+
+                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
+                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
+                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
+                }  
             }
         }
     }
