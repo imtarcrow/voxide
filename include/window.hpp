@@ -54,6 +54,7 @@ public:
     void set_capturing_mouse(bool capturing_mouse) noexcept;
     void set_vsync_mode(int mode) noexcept;
 
+    [[nodiscard]] auto get_title() const noexcept -> std::string;
     [[nodiscard]] auto get_size() const noexcept -> std::pair<int, int>;
     [[nodiscard]] auto get_width() const noexcept -> int;
     [[nodiscard]] auto get_height() const noexcept -> int;

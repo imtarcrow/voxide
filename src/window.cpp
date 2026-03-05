@@ -202,6 +202,11 @@ void Window::set_vsync_mode(int mode) noexcept
     this->vsync_mode = mode;
 }
 
+auto Window::get_title() const noexcept -> std::string {
+    const char* title =  SDL_GetWindowTitle(this->window_handle);
+    return {title};
+}
+
 auto Window::get_size() const noexcept -> std::pair<int, int>
 {
     return this->size;
