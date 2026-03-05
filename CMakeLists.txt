@@ -19,7 +19,7 @@ set_source_files_properties(
 set(SOURCES 
     src/main.cpp
     src/window.cpp
-    src/game.cpp
+    src/engine.cpp
     src/shader_program.cpp
     src/camera.cpp
     src/chunk.cpp
