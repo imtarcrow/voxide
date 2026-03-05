@@ -12,11 +12,11 @@
 Chunk::Chunk(glm::ivec3 position)
     : position(position)
 {
-    for (int y = 0; y < CHUNK_SIZE_Y; y++) {
-        for (int z = 0; z < CHUNK_SIZE_Z; z++) {
-            for (int x = 0; x < CHUNK_SIZE_X; x++) {
-                if ((x + y + z) % 2 == 0) {
-                    this->blocks[(x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (y * CHUNK_SIZE_Z) + z] = 1;
+    for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
+        for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
+            for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+                if ((xpos + ypos + zpos) % 2 == 0) {
+                    this->blocks[(xpos * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (ypos * CHUNK_SIZE_Z) + zpos] = 1;
                 }
             }
         }
@@ -45,17 +45,8 @@ auto Chunk::validate_coordinates(glm::ivec3 position) const noexcept -> bool
     return true;
 }
 
-void Chunk::render(ShaderProgram& program) const noexcept
+void Chunk::render() const noexcept
 {
-    if (!program.use()) {
-        spdlog::error("Failed to use Shader Program");
-    }
-
-    auto model = glm::mat4(1.0F);
-    model = glm::translate(model, { this->position.x * CHUNK_SIZE_X, this->position.y * CHUNK_SIZE_Y, this->position.z * CHUNK_SIZE_Z });
-
-
-    program.set_uniform("model", model);
     this->mesh->render();
 }
 

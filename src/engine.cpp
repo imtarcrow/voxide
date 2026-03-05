@@ -52,13 +52,13 @@ void Engine::init()
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
-    this->chunk1 = std::make_unique<Chunk>(glm::ivec3(1, 0, 0));
+    this->chunk1 = std::make_unique<Chunk>(glm::ivec3(1, 1, 1));
 
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     this->window->set_capturing_mouse(true);
     this->initialize_imgui();
@@ -205,8 +205,20 @@ void Engine::run()
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
-        this->chunk->render(*this->program);
-        this->chunk1->render(*this->program);
+        glm::ivec3 position = this->chunk->get_position();
+        auto model = glm::mat4(1.0F);
+        model = glm::translate(model, { position.x * CHUNK_SIZE_X, position.y * CHUNK_SIZE_Y, position.z * CHUNK_SIZE_Z });
+
+        program->set_uniform("model", model);
+
+        this->chunk->render();
+
+        position = this->chunk1->get_position();
+        model = glm::mat4(1.0F);
+        model = glm::translate(model, { position.x * CHUNK_SIZE_X, position.y * CHUNK_SIZE_Y, position.z * CHUNK_SIZE_Z });
+
+        program->set_uniform("model", model);
+        this->chunk1->render();
 
         this->end_frame();
     }
