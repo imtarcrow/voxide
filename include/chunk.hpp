@@ -10,6 +10,8 @@
 
 #include "chunk_mesh.hpp"
 
+// max 31 for each due to vertex data packing into 5 bits
+
 constexpr std::size_t CHUNK_SIZE_X = 16;
 constexpr std::size_t CHUNK_SIZE_Y = 16;
 constexpr std::size_t CHUNK_SIZE_Z = 16;
@@ -40,7 +42,7 @@ public:
     Chunk(Chunk&&) noexcept = default;
     auto operator=(Chunk&&) noexcept -> Chunk& = default;
 
-    void render(ShaderProgram& program) const noexcept;
+    void render() const noexcept;
 
     [[nodiscard]] auto get_block_at(glm::ivec3 position) const noexcept -> std::uint8_t;
     void set_block_at(glm::ivec3 position, std::uint8_t block_id) noexcept;
