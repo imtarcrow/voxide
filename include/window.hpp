@@ -18,10 +18,14 @@ private:
     bool always_on_top = false;
     bool capturing_mouse = false;
 
+    int vsync_mode = 1;
+
     std::pair<int, int> position;
     std::pair<int, int> size;
 
     std::string title;
+
+    auto create_context() -> bool;
 
 public:
     Window(const std::string& title, int width, int height, SDL_WindowFlags flags);
@@ -35,7 +39,7 @@ public:
     Window(Window&&) noexcept = default;
     auto operator=(Window&&) noexcept -> Window& = default;
 
-    [[nodiscard]] auto get_handle() const noexcept -> SDL_Window*;
+    [[nodiscard]] auto get_window_handle() const noexcept -> SDL_Window*;
     [[nodiscard]] auto get_context() const noexcept -> SDL_GLContext;
 
     void handle_event(SDL_WindowEvent event) noexcept;
@@ -48,6 +52,7 @@ public:
     void set_fullscreen(bool fullscreen) noexcept;
     void set_always_on_top(bool always_on_top) noexcept;
     void set_capturing_mouse(bool capturing_mouse) noexcept;
+    void set_vsync_mode(int mode) noexcept;
 
     [[nodiscard]] auto get_size() const noexcept -> std::pair<int, int>;
     [[nodiscard]] auto get_width() const noexcept -> int;
@@ -62,6 +67,10 @@ public:
     [[nodiscard]] auto is_fullscreen() const noexcept -> bool;
     [[nodiscard]] auto is_always_on_top() const noexcept -> bool;
     [[nodiscard]] auto is_capturing_mouse() const noexcept -> bool;
+
+    [[nodiscard]] auto get_vsync_mode() const noexcept -> int;
+
+    
 };
 
 #endif // !VOXIDE_WINDOW_HEADER

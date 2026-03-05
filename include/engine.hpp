@@ -31,12 +31,13 @@ private:
     std::unique_ptr<Chunk> chunk;
 
     FrameData frame_data;
-    float total_time_passed;
-    float time_since_last_log;
+    float total_time_passed = 0.0F;
+    float time_since_last_log = 0.0F;
 
     bool should_quit = false;
 
     void initialize_imgui() noexcept;
+
     void prepare_frame() noexcept;
     void end_frame() noexcept;
 
