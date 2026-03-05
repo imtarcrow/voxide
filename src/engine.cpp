@@ -52,6 +52,7 @@ void Engine::init()
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
+    this->chunk1 = std::make_unique<Chunk>(glm::ivec3(1, 0, 0));
 
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
@@ -201,11 +202,11 @@ void Engine::run()
             spdlog::error("Failed to use Shader Program");
         }
 
-        this->program->set_uniform("model", glm::mat4(1.0F));
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
         this->chunk->render(*this->program);
+        this->chunk1->render(*this->program);
 
         this->end_frame();
     }
