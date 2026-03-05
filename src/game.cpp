@@ -9,7 +9,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
-#include <format>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -49,25 +48,6 @@ void Game::init_dear_imgui() noexcept
 void Game::init()
 {
     this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
-
-    glGenBuffers(1, &this->VBO);
-    glGenBuffers(1, &this->EBO);
-
-    glGenVertexArrays(1, &this->VAO);
-    glBindVertexArray(this->VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-    glBufferData(GL_ARRAY_BUFFER, verts2.size() * sizeof(GLfloat), verts2.data(), GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)nullptr);
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, inds2.size() * sizeof(GLuint), inds2.data(), GL_STATIC_DRAW);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
@@ -119,10 +99,6 @@ void Game::run()
 {
     Uint64 last_time = SDL_GetTicks();
 
-    int xcount = 1;
-    int ycount = 1;
-    int zcount = 1;
-
     bool should_quit = false;
     SDL_Event event;
     while (!should_quit) {
@@ -153,10 +129,6 @@ void Game::run()
 
         if (!this->window->is_capturing_mouse()) {
             ImGui::Begin("Settings", nullptr, 0);
-
-            ImGui::DragInt("X", &xcount, 1, 0, 100);
-            ImGui::DragInt("Y", &ycount, 1, 0, 100);
-            ImGui::DragInt("Z", &zcount, 1, 0, 100);
 
             ImGui::End();
         }
@@ -196,26 +168,13 @@ void Game::run()
         glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glBindVertexArray(this->VAO);
-
         if (!this->program->use()) {
             spdlog::error("Failed to use Shader Program");
         }
 
+        this->program->set_uniform("model", glm::mat4(1.0F));
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
-
-        for (int xpos = 0; xpos < xcount; xpos++) {
-            for (int ypos = 0; ypos < ycount; ypos++) {
-                for (int zpos = 0; zpos < zcount; zpos++) {
-                    auto model = glm::mat4(1.0F);
-                    model = glm::translate(model, glm::vec3(xpos, ypos, zpos));
-
-                    this->program->set_uniform("model", model);
-                    // glDrawElements(GL_TRIANGLES, inds2.size(), GL_UNSIGNED_INT, nullptr);
-                }
-            }
-        }
 
         glBindVertexArray(this->chunk->VAO);
         glDrawElements(GL_TRIANGLES, this->chunk->indicies_size, GL_UNSIGNED_INT, nullptr);
@@ -233,10 +192,4 @@ void Game::run()
     ImGui::DestroyContext();
 
     SDL_SetWindowRelativeMouseMode(this->window->get_handle(), false);
-
-    glDeleteBuffers(1, &this->VBO);
-    glDeleteBuffers(1, &this->EBO);
-    glDeleteVertexArrays(1, &this->VAO);
-
-    this->VAO = this->VBO = this->EBO = 0;
 }
