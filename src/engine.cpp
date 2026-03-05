@@ -41,26 +41,23 @@ void Engine::initialize_imgui() noexcept
     ImGuiIO& imgui_io = ImGui::GetIO();
     imgui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    ImGui_ImplSDL3_InitForOpenGL(this->window->get_handle(), this->window->get_context());
+    ImGui_ImplSDL3_InitForOpenGL(this->window->get_window_handle(), this->window->get_context());
     ImGui_ImplOpenGL3_Init();
 }
 
 void Engine::init()
 {
-    this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
-
+    this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
-
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
 
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     this->window->set_capturing_mouse(true);
     this->initialize_imgui();
@@ -172,7 +169,7 @@ void Engine::end_frame() noexcept
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    SDL_GL_SwapWindow(this->window->get_handle());
+    SDL_GL_SwapWindow(this->window->get_window_handle());
 }
 
 void Engine::run()
@@ -208,8 +205,7 @@ void Engine::run()
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
-        glBindVertexArray(this->chunk->VAO);
-        glDrawElements(GL_TRIANGLES, this->chunk->indicies_size, GL_UNSIGNED_INT, nullptr);
+        this->chunk->render(*this->program);
 
         this->end_frame();
     }
@@ -218,5 +214,6 @@ void Engine::run()
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
-    SDL_SetWindowRelativeMouseMode(this->window->get_handle(), false);
+    // needed to avoid segmentation fault when force quitting
+    SDL_SetWindowRelativeMouseMode(this->window->get_window_handle(), false);
 }

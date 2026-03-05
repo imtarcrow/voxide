@@ -1,32 +1,36 @@
 #pragma once
-#include <glm/fwd.hpp>
+#include "shader_program.hpp"
 #ifndef VOXIDE_CHUNK_HEADER
 #define VOXIDE_CHUNK_HEADER
 
 #include <cstddef>
+#include <glm/fwd.hpp>
 #include <glm/glm.hpp>
+#include <memory>
 
-#include "glad/glad.h"
+#include "chunk_mesh.hpp"
+
+constexpr std::size_t CHUNK_SIZE_X = 16;
+constexpr std::size_t CHUNK_SIZE_Y = 16;
+constexpr std::size_t CHUNK_SIZE_Z = 16;
+constexpr std::size_t CHUNK_SIZE = CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z;
 
 class Chunk
 {
 
 private:
+    std::array<std::uint8_t, CHUNK_SIZE> blocks = { 0 };
+
     glm::ivec3 position;
+    std::unique_ptr<ChunkMesh> mesh;
 
-    std::array<char, static_cast<std::size_t>(16 * 16 * 16)> blocks = { 0 };
-
-    auto is_in_chunk(glm::ivec3 position) -> bool;
+    [[nodiscard]] auto validate_coordinates(glm::ivec3 position) const noexcept -> bool;
 
 public:
-    GLuint VAO = 0;
-    GLuint VBO = 0;
-    GLuint EBO = 0;
-
     int indicies_size = 0;
 
     Chunk(glm::ivec3 position);
-    ~Chunk();
+    ~Chunk() = default;
 
     // disable copying
     Chunk(const Chunk&) = delete;
@@ -36,10 +40,13 @@ public:
     Chunk(Chunk&&) noexcept = default;
     auto operator=(Chunk&&) noexcept -> Chunk& = default;
 
-    void gen_chunk_mesh();
+    void render(ShaderProgram& program) const noexcept;
 
-    auto get_block_at(glm::ivec3 position) -> char;
-    void set_block_at(glm::ivec3 position, char block_id);
+    [[nodiscard]] auto get_block_at(glm::ivec3 position) const noexcept -> std::uint8_t;
+    void set_block_at(glm::ivec3 position, std::uint8_t block_id) noexcept;
+
+    [[nodiscard]] auto get_position() const noexcept -> glm::ivec3;
+    void set_position(glm::ivec3 position) noexcept;
 };
 
 #endif // VOXIDE_CHUNK_HEADER

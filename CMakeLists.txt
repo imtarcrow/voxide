@@ -23,6 +23,7 @@ set(SOURCES
     src/shader_program.cpp
     src/camera.cpp
     src/chunk.cpp
+    src/chunk_mesh.cpp
     
     src/glad.c
 

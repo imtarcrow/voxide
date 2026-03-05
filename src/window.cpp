@@ -12,16 +12,55 @@
 constexpr int DEFAULT_WIDTH = 1024;
 constexpr int DEFAULT_HEIGHT = 768;
 
-Window::Window(const std::string& title, int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT, SDL_WindowFlags flags = 0)
+auto Window::create_context() -> bool
 {
 
-    spdlog::trace("Creating Window ('{}') w={}, h={}, flags={}", title, width, height, flags);
+    // set OpenGL version
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
-    this->window_handle = SDL_CreateWindow(title.c_str(), width, height, flags | SDL_WINDOW_OPENGL);
-    if (this->window_handle == nullptr) {
-        spdlog::error("Failed to create SDL3 Window!");
-        throw std::runtime_error("Failed to create SDL3 Window!");
+    // "enforce" modern opengl, required on macOS
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+
+    // set core profile
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+    // request multisample buffer with 8x
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+
+    // enable doublebuffering, required for vsync
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    // 24-bit depth buffer
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    
+    SDL_GLContext context = SDL_GL_CreateContext(this->window_handle);
+    if (context == nullptr) {
+        spdlog::error("Failed to create SDL3 OpenGL context: {}", SDL_GetError());
+        return false;
     }
+
+    SDL_GL_MakeCurrent(this->window_handle, context);
+    if (!SDL_GL_SetSwapInterval(1)) {
+        spdlog::warn("Failed to enable VSync: {}", SDL_GetError());
+    }
+
+    this->glcontext = context;
+
+    int minor = 0;
+    int major = 0;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major); 
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor); 
+
+    spdlog::info("OpenGL {}.{} Context!", major, minor);
+
+    return true;
+}
+
+Window::Window(const std::string& title, int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT, SDL_WindowFlags flags = 0)
+{
+    spdlog::trace("Creating Window ('{}') w={}, h={}, flags={}", title, width, height, flags);
 
     this->visible = (flags & SDL_WINDOW_HIDDEN) == 0;
     this->resizable = (flags & SDL_WINDOW_RESIZABLE) != 0;
@@ -29,24 +68,14 @@ Window::Window(const std::string& title, int width = DEFAULT_WIDTH, int height =
     this->always_on_top = (flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0;
     this->capturing_mouse = false;
 
-    SDL_SetHint("SDL_HINT_MOUSE_RELATIVE_MODE_CENTER", "1");
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    this->glcontext = SDL_GL_CreateContext(this->window_handle);
-    if (this->glcontext == nullptr) {
-        spdlog::error("Failed to create SDL3 OpenGL context!");
-        throw std::runtime_error("Failed to create SDL3 OpenGL context!");
+    this->window_handle = SDL_CreateWindow(title.c_str(), width, height, flags | SDL_WINDOW_OPENGL);
+    if (this->window_handle == nullptr) {
+        spdlog::error("Failed to create SDL3 Window!");
+        throw std::runtime_error("Failed to create SDL3 Window!");
     }
 
-    SDL_GL_MakeCurrent(this->window_handle, this->glcontext);
-
-    if (!SDL_GL_SetSwapInterval(1)) {
-        spdlog::warn("Failed to enable VSync: {}", SDL_GetError());
+    if(!this->create_context()) {
+        throw std::runtime_error("Failed to create SDL3 OpenGL context!");
     }
 
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
@@ -68,7 +97,7 @@ Window::~Window()
     SDL_DestroyWindow(this->window_handle);
 }
 
-[[nodiscard]] auto Window::get_handle() const noexcept -> SDL_Window*
+[[nodiscard]] auto Window::get_window_handle() const noexcept -> SDL_Window*
 {
     return this->window_handle;
 }
@@ -154,9 +183,23 @@ void Window::set_always_on_top(bool always_on_top) noexcept
     this->always_on_top = always_on_top;
 }
 
-void Window::set_capturing_mouse(bool capturing_mouse) noexcept {
+void Window::set_capturing_mouse(bool capturing_mouse) noexcept
+{
     SDL_SetWindowRelativeMouseMode(this->window_handle, capturing_mouse);
     this->capturing_mouse = capturing_mouse;
+}
+
+// mode: 0 = disabled, 1 = enabled, -1 = adaptive
+void Window::set_vsync_mode(int mode) noexcept
+{
+    SDL_GL_MakeCurrent(this->window_handle, this->glcontext);
+
+    if (!SDL_GL_SetSwapInterval(mode)) {
+        spdlog::warn("Failed to change VSync mode: {}", SDL_GetError());
+        return;
+    }
+
+    this->vsync_mode = mode;
 }
 
 auto Window::get_size() const noexcept -> std::pair<int, int>
@@ -212,4 +255,9 @@ auto Window::is_always_on_top() const noexcept -> bool
 auto Window::is_capturing_mouse() const noexcept -> bool
 {
     return this->capturing_mouse;
+}
+
+auto Window::get_vsync_mode() const noexcept -> int
+{
+    return this->vsync_mode;
 }

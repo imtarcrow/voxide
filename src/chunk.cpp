@@ -1,249 +1,83 @@
 #include "chunk.hpp"
 
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
-#include <print>
-#include <random>
+#include <memory>
 #include <spdlog/spdlog.h>
-#include <stdexcept>
 
+#include "chunk_mesh.hpp"
 #include "glad/glad.h"
+#include "shader_program.hpp"
 
 Chunk::Chunk(glm::ivec3 position)
     : position(position)
 {
-    glGenBuffers(1, &this->VBO);
-    glGenBuffers(1, &this->EBO);
-    glGenVertexArrays(1, &this->VAO);
-
-    if (this->VBO == GL_INVALID_VALUE || this->EBO == GL_INVALID_VALUE) {
-        spdlog::error("glGenBuffers returned GL_INVALID_VALUE");
-        throw std::runtime_error("glGenBuffers returned GL_INVALID_VALUE");
+    for (int y = 0; y < CHUNK_SIZE_Y; y++) {
+        for (int z = 0; z < CHUNK_SIZE_Z; z++) {
+            for (int x = 0; x < CHUNK_SIZE_X; x++) {
+                if ((x + y + z) % 2 == 0) {
+                    this->blocks[(x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (y * CHUNK_SIZE_Z) + z] = 1;
+                }
+            }
+        }
     }
 
-    if (this->VAO == GL_INVALID_VALUE) {
-        spdlog::error("glGenVertexArrays returned GL_INVALID_VALUE");
-        throw std::runtime_error("glGenVertexArrays returned GL_INVALID_VALUE");
-    }
+    // this->blocks.fill(1);
+    this->mesh = std::make_unique<ChunkMesh>();
 
-    this->blocks.fill(1);
-
-    this->gen_chunk_mesh();
+    this->mesh->generate(*this);
 }
 
-Chunk::~Chunk()
+auto Chunk::validate_coordinates(glm::ivec3 position) const noexcept -> bool
 {
-    glDeleteBuffers(1, &this->VBO);
-    glDeleteBuffers(1, &this->EBO);
-    glDeleteVertexArrays(1, &this->VAO);
-}
-
-auto Chunk::is_in_chunk(glm::ivec3 position) -> bool
-{
-    if (position.x < 0 || position.x > 15) {
+    if (position.x < 0 || position.x > static_cast<int>(CHUNK_SIZE_X - 1)) {
         return false;
     }
 
-    if (position.y < 0 || position.y > 15) {
+    if (position.y < 0 || position.y > static_cast<int>(CHUNK_SIZE_Y - 1)) {
         return false;
     }
 
-    if (position.z < 0 || position.z > 15) {
+    if (position.z < 0 || position.z > static_cast<int>(CHUNK_SIZE_Z - 1)) {
         return false;
     }
 
     return true;
 }
 
-auto Chunk::get_block_at(glm::ivec3 position) -> char
+void Chunk::render(ShaderProgram& program) const noexcept
 {
-    if (!this->is_in_chunk(position)) {
+    if (!program.use()) {
+        spdlog::error("Failed to use Shader Program");
+    }
+
+    auto model = glm::mat4(1.0F);
+    model = glm::translate(model, { this->position.x * CHUNK_SIZE_X, this->position.y * CHUNK_SIZE_Y, this->position.z * CHUNK_SIZE_Z });
+
+    program.set_uniform("model", model);
+    this->mesh->render();
+}
+
+auto Chunk::get_block_at(glm::ivec3 position) const noexcept -> std::uint8_t
+{
+    if (!this->validate_coordinates(position)) {
         return 0;
     }
 
-    return this->blocks[((position.x * 15 * 15) + (position.y * 15) + position.z)];
+    return this->blocks[((position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z)];
 }
 
-void Chunk::gen_chunk_mesh()
+void Chunk::set_block_at(glm::ivec3 position, std::uint8_t block_id) noexcept
 {
-    std::vector<float> verticies = {};
-    std::vector<unsigned int> indicies = {};
+    this->blocks[((position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z)] = block_id;
+}
 
-    for (int ypos = 0; ypos < 16; ypos++) {
-        for (int zpos = 0; zpos < 16; zpos++) {
-            for (int xpos = 0; xpos < 16; xpos++) {
-                if (this->get_block_at({ xpos, ypos, zpos }) == 0) {
-                    continue;
-                }
+auto Chunk::get_position() const noexcept -> glm::ivec3
+{
+    return this->position;
+}
 
-                // X+ facing
-                if (this->get_block_at({ xpos + 1, ypos, zpos }) == 0) {
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 1);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 3);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }
-
-                // X- facing
-                if (this->get_block_at({ xpos - 1, ypos, zpos }) == 0) {
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 1);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 3);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-                }
-
-                // Z+ facing
-                if (this->get_block_at({ xpos, ypos, zpos + 1 }) == 0) {
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 1);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 3);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-                }
-
-                // Z- facing
-                if (this->get_block_at({ xpos, ypos, zpos - 1 }) == 0) {
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 1);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 3);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }
-
-                // Y+ facing
-                if (this->get_block_at({ xpos, ypos + 1, zpos }) == 0) {
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 1);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 3);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) + 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }
-
-                // Y- facing
-                if (this->get_block_at({ xpos, ypos - 1, zpos }) == 0) {
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 1);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 0);
-                    indicies.push_back((verticies.size() / 3) + 2);
-                    indicies.push_back((verticies.size() / 3) + 3);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) + 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) - 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-
-                    verticies.push_back(static_cast<float>(xpos) + 0.5F);
-                    verticies.push_back(static_cast<float>(ypos) - 0.5F);
-                    verticies.push_back(static_cast<float>(zpos) - 0.5F);
-                }
-            }
-        }
-    }
-
-    glBindVertexArray(this->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-
-    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(float), verticies.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(unsigned int), indicies.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
-
-    this->indicies_size = indicies.size();
-    spdlog::trace("size indicies: {}", this->indicies_size);
+void Chunk::set_position(glm::ivec3 position) noexcept
+{
+    this->position = position;
 }
