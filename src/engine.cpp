@@ -51,6 +51,7 @@ void Engine::init()
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
+
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
     this->chunk1 = std::make_unique<Chunk>(glm::ivec3(1, 1, 1));
 
@@ -104,7 +105,7 @@ void Engine::update_frametimes() noexcept
     this->total_time_passed += this->frame_data.delta_time;
     this->time_since_last_log += this->frame_data.delta_time;
 
-    this->window->set_title(std::format("{:.2f}s passed | test window", this->total_time_passed));
+    this->window->set_title(std::format("test window | {:.2f}", this->total_time_passed));
 
     if (this->time_since_last_log > 5.0F) {
         float average_frame_time = 0.0F;

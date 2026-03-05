@@ -54,6 +54,15 @@ void Camera::process_mouse_movement(float xoffset, float yoffset, bool constrain
         this->pitch = std::min(this->pitch, 89.99F);
         this->pitch = std::max(this->pitch, -89.99F);
     }
+    
+    if (this->yaw > 180.0F) {
+        float delta = this->yaw - 180.0F; 
+        this->yaw = -180.0F + delta; 
+    }
+    if (this->yaw < -180.0F) {
+        float delta = -180.0F - this->yaw; 
+        this->yaw = 180.0F - delta; 
+    }
 
     this->update_direction_vectors();
 }
