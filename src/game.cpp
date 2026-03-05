@@ -33,7 +33,7 @@ Game::~Game()
     SDL_Quit();
 }
 
-void Game::init_dear_imgui() noexcept
+void Game::initialize_imgui() noexcept
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -47,11 +47,12 @@ void Game::init_dear_imgui() noexcept
 
 void Game::init()
 {
-    this->window = std::make_unique<Window>("test window", DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
+    this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
+
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
-                                            static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
+                                            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
 
@@ -60,8 +61,9 @@ void Game::init()
     glEnable(GL_DEPTH_TEST);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     this->window->set_capturing_mouse(true);
-    this->init_dear_imgui();
+    this->initialize_imgui();
 }
 
 void Game::handle_movement(float delta_time) noexcept
@@ -95,42 +97,97 @@ void Game::handle_movement(float delta_time) noexcept
     }
 }
 
-void Game::run()
+void Game::update_frametimes() noexcept
 {
-    Uint64 last_time = SDL_GetTicks();
+    this->frame_data.delta_time = static_cast<float>((SDL_GetTicksNS() - this->frame_data.last_time_ns)) / 1000000000.0F;
+    this->frame_data.last_time_ns = SDL_GetTicksNS();
+    this->frame_data.frame_times.push_back(this->frame_data.delta_time);
 
-    bool should_quit = false;
-    SDL_Event event;
-    while (!should_quit) {
-        while (SDL_PollEvent(&event)) {
-            if (!this->window->is_capturing_mouse()) {
-                ImGui_ImplSDL3_ProcessEvent(&event);
-            }
-            if (event.type == SDL_EVENT_MOUSE_MOTION && this->window->is_capturing_mouse()) {
-                this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
-            }
-            if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
-                this->window->set_capturing_mouse(!this->window->is_capturing_mouse());
-            }
-            if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
-                this->window->handle_event(event.window);
-            }
-            if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-                this->camera->set_aspect_ratio(static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2));
-            }
-            if (event.type == SDL_EVENT_QUIT) {
-                should_quit = true;
-            }
+    this->total_time_passed += this->frame_data.delta_time;
+    this->time_since_last_log += this->frame_data.delta_time;
+
+    this->window->set_title(std::format("{:.2f}s passed | test window", this->total_time_passed));
+
+    if (this->time_since_last_log > 5.0F) {
+        float average_frame_time = 0.0F;
+        for (auto it = this->frame_data.frame_times.begin(); it <= this->frame_data.frame_times.end(); it++) {
+            average_frame_time += *it;
         }
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
+        average_frame_time /= static_cast<float>(this->frame_data.frame_times.size());
 
+        spdlog::trace("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.frame_times.size(),
+                      average_frame_time, 1 / average_frame_time);
+        this->time_since_last_log -= 5.0F;
+        this->frame_data.frame_times.clear();
+    }
+}
+
+void Game::process_events() noexcept
+{
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+
+        // Send all events to imgui, if the camera is not being controlled
         if (!this->window->is_capturing_mouse()) {
-            ImGui::Begin("Settings", nullptr, 0);
+            ImGui_ImplSDL3_ProcessEvent(&event);
+        }
 
-            ImGui::End();
+        // Send all window related events to the window
+        if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
+            this->window->handle_event(event.window);
+        }
+
+        if (event.type == SDL_EVENT_MOUSE_MOTION && this->window->is_capturing_mouse()) {
+            this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
+        }
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
+            this->window->set_capturing_mouse(!this->window->is_capturing_mouse());
+        }
+        if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+            this->camera->set_aspect_ratio(static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2));
+        }
+
+        if (event.type == SDL_EVENT_QUIT) {
+            this->should_quit = true;
+        }
+    }
+}
+
+void Game::prepare_frame() noexcept
+{
+    this->update_frametimes();
+
+    // prepare imgui for the framestart
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+
+    glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Game::end_frame() noexcept
+{
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    SDL_GL_SwapWindow(this->window->get_handle());
+}
+
+void Game::run()
+{
+
+    this->frame_data.last_time_ns = SDL_GetTicksNS();
+
+    while (!this->should_quit) {
+
+        this->prepare_frame();
+
+        this->process_events();
+
+        if (this->window->is_capturing_mouse()) {
+            this->handle_movement(this->frame_data.delta_time);
         }
 
         ImGui::Begin("Info", nullptr, 0);
@@ -138,35 +195,10 @@ void Game::run()
         ImGui::Text("Orientation: Yaw: %.2f Pitch: %.2f", this->camera->get_yaw(), this->camera->get_pitch());
         ImGui::End();
 
-        Uint64 current_time = SDL_GetTicks();
-        float delta_time = (current_time - last_time) / 1000.0f;
-
-        this->frame_data.frame_times.push_back(delta_time);
-        this->frame_data.time_passed += delta_time;
-
-        if (this->frame_data.time_passed > 5.0F) {
-            float average_time = 0;
-
-            for (auto it = this->frame_data.frame_times.begin(); it <= this->frame_data.frame_times.end(); it++) {
-                average_time += *it;
-            }
-
-            average_time /= static_cast<float>(this->frame_data.frame_times.size());
-
-            spdlog::trace("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.frame_times.size(),
-                          average_time, 1 / average_time);
-            this->frame_data.time_passed -= 5.0F;
-            this->frame_data.frame_times.clear();
+        if (!this->window->is_capturing_mouse()) {
+            ImGui::Begin("Settings", nullptr, 0);
+            ImGui::End();
         }
-
-        last_time = current_time;
-
-        if (this->window->is_capturing_mouse()) {
-            this->handle_movement(delta_time);
-        }
-
-        glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!this->program->use()) {
             spdlog::error("Failed to use Shader Program");
@@ -179,12 +211,7 @@ void Game::run()
         glBindVertexArray(this->chunk->VAO);
         glDrawElements(GL_TRIANGLES, this->chunk->indicies_size, GL_UNSIGNED_INT, nullptr);
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        SDL_GL_SwapWindow(this->window->get_handle());
-
-        SDL_Delay(1);
+        this->end_frame();
     }
 
     ImGui_ImplOpenGL3_Shutdown();
