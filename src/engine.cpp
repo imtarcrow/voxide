@@ -1,4 +1,4 @@
-#include "game.hpp"
+#include "engine.hpp"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_events.h>
@@ -21,19 +21,19 @@
 #include "glad/glad.h"
 #include "shader_program.hpp"
 
-Game::Game()
+Engine::Engine()
 {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         throw std::runtime_error("Failed to initialize SDL3");
     }
 }
 
-Game::~Game()
+Engine::~Engine()
 {
     SDL_Quit();
 }
 
-void Game::initialize_imgui() noexcept
+void Engine::initialize_imgui() noexcept
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -45,7 +45,7 @@ void Game::initialize_imgui() noexcept
     ImGui_ImplOpenGL3_Init();
 }
 
-void Game::init()
+void Engine::init()
 {
     this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 
@@ -66,7 +66,7 @@ void Game::init()
     this->initialize_imgui();
 }
 
-void Game::handle_movement(float delta_time) noexcept
+void Engine::handle_movement(float delta_time) noexcept
 {
     const bool* keys = SDL_GetKeyboardState(nullptr);
 
@@ -97,7 +97,7 @@ void Game::handle_movement(float delta_time) noexcept
     }
 }
 
-void Game::update_frametimes() noexcept
+void Engine::update_frametimes() noexcept
 {
     this->frame_data.delta_time = static_cast<float>((SDL_GetTicksNS() - this->frame_data.last_time_ns)) / 1000000000.0F;
     this->frame_data.last_time_ns = SDL_GetTicksNS();
@@ -123,7 +123,7 @@ void Game::update_frametimes() noexcept
     }
 }
 
-void Game::process_events() noexcept
+void Engine::process_events() noexcept
 {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -154,7 +154,7 @@ void Game::process_events() noexcept
     }
 }
 
-void Game::prepare_frame() noexcept
+void Engine::prepare_frame() noexcept
 {
     this->update_frametimes();
 
@@ -167,7 +167,7 @@ void Game::prepare_frame() noexcept
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Game::end_frame() noexcept
+void Engine::end_frame() noexcept
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -175,7 +175,7 @@ void Game::end_frame() noexcept
     SDL_GL_SwapWindow(this->window->get_handle());
 }
 
-void Game::run()
+void Engine::run()
 {
 
     this->frame_data.last_time_ns = SDL_GetTicksNS();

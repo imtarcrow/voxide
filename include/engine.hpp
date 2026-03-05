@@ -21,7 +21,7 @@ using FrameData = struct FrameData
     std::vector<float> frame_times;
 };
 
-class Game
+class Engine
 {
 
 private:
@@ -47,16 +47,16 @@ private:
     void handle_movement(float delta_time) noexcept;
 
 public:
-    Game();
-    ~Game();
+    Engine();
+    ~Engine();
 
     // disable copying
-    Game(const Game&) = delete;
-    auto operator=(const Game&) -> Game& = delete;
+    Engine(const Engine&) = delete;
+    auto operator=(const Engine&) -> Engine& = delete;
 
     // disable moving
-    Game(const Game&&) = delete;
-    auto operator=(const Game&&) -> Game& = delete;
+    Engine(const Engine&&) = delete;
+    auto operator=(const Engine&&) -> Engine& = delete;
 
     void run();
     void init();
