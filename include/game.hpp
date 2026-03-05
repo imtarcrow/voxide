@@ -10,12 +10,14 @@
 #include "shader_program.hpp"
 #include "window.hpp"
 
-constexpr int DEFAULT_WIDTH = 1024;
-constexpr int DEFAULT_HEIGHT = 768;
+constexpr int WINDOW_WIDTH = 1024;
+constexpr int WINDOW_HEIGHT = 768;
 
 using FrameData = struct FrameData
 {
-    float time_passed;
+    float delta_time;
+    unsigned long last_time_ns;
+
     std::vector<float> frame_times;
 };
 
@@ -29,9 +31,20 @@ private:
     std::unique_ptr<Chunk> chunk;
 
     FrameData frame_data;
+    float total_time_passed;
+    float time_since_last_log;
+
+    bool should_quit = false;
+
+    void initialize_imgui() noexcept;
+    void prepare_frame() noexcept;
+    void end_frame() noexcept;
+
+    void update_frametimes() noexcept;
+
+    void process_events() noexcept;
 
     void handle_movement(float delta_time) noexcept;
-    void init_dear_imgui() noexcept;
 
 public:
     Game();

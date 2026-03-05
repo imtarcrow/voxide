@@ -9,8 +9,10 @@
 
 #include "glad/glad.h"
 
+constexpr int DEFAULT_WIDTH = 1024;
+constexpr int DEFAULT_HEIGHT = 768;
 
-Window::Window(const std::string& title, int width, int height, SDL_WindowFlags flags)
+Window::Window(const std::string& title, int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT, SDL_WindowFlags flags = 0)
 {
 
     spdlog::trace("Creating Window ('{}') w={}, h={}, flags={}", title, width, height, flags);
