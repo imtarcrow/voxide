@@ -1,5 +1,7 @@
 #include "chunk_mesh.hpp"
 
+#include <cstdint>
+#include <glm/fwd.hpp>
 #include <spdlog/spdlog.h>
 
 #include "chunk.hpp"
@@ -29,19 +31,32 @@ ChunkMesh::~ChunkMesh()
     glDeleteVertexArrays(1, &this->VAO);
 }
 
+auto ChunkMesh::pack_vertex_data(glm::uvec3 position, std::uint8_t direction, std::uint8_t texture) const noexcept -> std::uint32_t
+{
+    std::uint32_t data = 0;
+
+    data = data | (static_cast<std::uint32_t>(position.x) << 0U);
+    data = data | (static_cast<std::uint32_t>(position.y) << 5U);
+    data = data | (static_cast<std::uint32_t>(position.z) << 10U);
+    data = data | (static_cast<std::uint32_t>(direction) << 15U);
+    data = data | ((static_cast<std::uint32_t>(texture) & 0x3FU) << 18U);
+
+    return data;
+}
+
 void ChunkMesh::generate(const Chunk& chunk)
 {
-    std::vector<Vertex> verticies;
+    std::vector<std::uint32_t> verticies;
     std::vector<GLuint> indicies;
 
     auto push_face = [&](int xpos, int ypos, int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2, glm::uvec3 pos3, std::uint8_t dir,
                          std::uint8_t texture) {
         GLuint base = verticies.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
-        verticies.push_back({ glm::uvec3(xpos, ypos, zpos) + pos0, dir, texture });
-        verticies.push_back({ glm::uvec3(xpos, ypos, zpos) + pos1, dir, texture });
-        verticies.push_back({ glm::uvec3(xpos, ypos, zpos) + pos2, dir, texture });
-        verticies.push_back({ glm::uvec3(xpos, ypos, zpos) + pos3, dir, texture });
+        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos0, dir, texture));
+        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos1, dir, texture));
+        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos2, dir, texture));
+        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos3, dir, texture));
     };
 
     for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
@@ -92,26 +107,11 @@ void ChunkMesh::generate(const Chunk& chunk)
         }
     }
 
-    std::vector<std::uint32_t> vertex_data;
-
-    vertex_data.reserve(verticies.size());
-    for (auto& vertex : verticies) {
-        std::uint32_t data = 0;
-
-        data = data | (static_cast<std::uint32_t>(vertex.position.x) << 0U);
-        data = data | (static_cast<std::uint32_t>(vertex.position.y) << 5U);
-        data = data | (static_cast<std::uint32_t>(vertex.position.z) << 10U);
-        data = data | (static_cast<std::uint32_t>(vertex.dir) << 15U);
-        data = data | ((static_cast<std::uint8_t>(vertex.texture) & 0x3FU) << 18U);
-
-        vertex_data.push_back(data);
-    }
-
     glBindVertexArray(this->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
 
-    glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(std::uint32_t), vertex_data.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(std::uint32_t), verticies.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(GLuint), indicies.data(), GL_STATIC_DRAW);
 
     glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(std::uint32_t), nullptr);

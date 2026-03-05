@@ -22,6 +22,8 @@ private:
 
     unsigned long indicies_size = 0;
 
+    [[nodiscard]] auto pack_vertex_data(glm::uvec3 position, std::uint8_t direction, std::uint8_t texture) const noexcept -> std::uint32_t;
+
 public: 
     ChunkMesh();
     ~ChunkMesh();
