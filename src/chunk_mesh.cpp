@@ -88,48 +88,6 @@ void ChunkMesh::generate(const Chunk& chunk)
                 if (block_id == 0) {
                     push_face(xpos, ypos, zpos, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 0, 0 }, { 1, 0, 0 }, 5, current_block);
                 }
-
-                // if (chunk.get_block_at({ xpos + 1, ypos, zpos }) == 0) {
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 1, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 0, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 0, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 1, zpos + 0);
-                // }
-                // // X- facing
-                // if (chunk.get_block_at({ xpos - 1, ypos, zpos }) == 0) {
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 1, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 0, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 0, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 1, zpos + 1);
-                // }
-                // // Z+ facing
-                // if (chunk.get_block_at({ xpos, ypos, zpos + 1 }) == 0) {
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 1, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 0, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 0, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 1, zpos + 1);
-                // }
-                // // Z- facing
-                // if (chunk.get_block_at({ xpos, ypos, zpos - 1 }) == 0) {
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 1, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 0, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 0, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 1, zpos + 0);
-                // }
-                // // Y+ facing
-                // if (chunk.get_block_at({ xpos, ypos + 1, zpos }) == 0) {
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 1, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 1, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 1, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 1, zpos + 0);
-                // }
-                // // Y- facing
-                // if (chunk.get_block_at({ xpos, ypos - 1, zpos }) == 0) {
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 0, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 0, zpos + 1);
-                //     vertex_positions.emplace_back(xpos + 0, ypos + 0, zpos + 0);
-                //     vertex_positions.emplace_back(xpos + 1, ypos + 0, zpos + 0);
-                // }
             }
         }
     }

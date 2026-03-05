@@ -29,6 +29,7 @@ private:
     std::unique_ptr<ShaderProgram> program;
     std::unique_ptr<Camera> camera;
     std::unique_ptr<Chunk> chunk;
+    std::unique_ptr<Chunk> chunk1;
 
     FrameData frame_data;
     float total_time_passed = 0.0F;

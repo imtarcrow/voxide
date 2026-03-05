@@ -22,7 +22,7 @@ Chunk::Chunk(glm::ivec3 position)
         }
     }
 
-    // this->blocks.fill(1);
+    //this->blocks.fill(1);
     this->mesh = std::make_unique<ChunkMesh>();
 
     this->mesh->generate(*this);
@@ -53,6 +53,7 @@ void Chunk::render(ShaderProgram& program) const noexcept
 
     auto model = glm::mat4(1.0F);
     model = glm::translate(model, { this->position.x * CHUNK_SIZE_X, this->position.y * CHUNK_SIZE_Y, this->position.z * CHUNK_SIZE_Z });
+
 
     program.set_uniform("model", model);
     this->mesh->render();
