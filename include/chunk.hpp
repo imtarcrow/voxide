@@ -1,5 +1,4 @@
 #pragma once
-#include "shader_program.hpp"
 #ifndef VOXIDE_CHUNK_HEADER
 #define VOXIDE_CHUNK_HEADER
 

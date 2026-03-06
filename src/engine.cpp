@@ -105,7 +105,7 @@ void Engine::update_frametimes() noexcept
     this->total_time_passed += this->frame_data.delta_time;
     this->time_since_last_log += this->frame_data.delta_time;
 
-    this->window->set_title(std::format("test window | {:.2f}", this->total_time_passed));
+    this->window->set_title(std::format("test window | {:.2f}s", this->total_time_passed));
 
     if (this->time_since_last_log > 5.0F) {
         float average_frame_time = 0.0F;
