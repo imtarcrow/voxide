@@ -6,15 +6,13 @@
 #include <spdlog/spdlog.h>
 
 #include "chunk_mesh.hpp"
-#include "glad/glad.h"
-#include "shader_program.hpp"
 
 Chunk::Chunk(glm::ivec3 position)
     : position(position)
 {
-    for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
-        for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
-            for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+    for (unsigned int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
+        for (unsigned int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
+            for (unsigned int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
                 if ((xpos + ypos + zpos) % 2 == 0) {
                     this->blocks[(xpos * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (ypos * CHUNK_SIZE_Z) + zpos] = 1;
                 }

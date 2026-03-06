@@ -44,8 +44,8 @@ void Camera::update_direction_vectors()
 
 void Camera::process_mouse_movement(float xoffset, float yoffset, bool constrain_pitch = true) noexcept
 {
-    xoffset *= this->sensitivity;
-    yoffset *= this->sensitivity;
+    xoffset *= this->mouse_sensitivity;
+    yoffset *= this->mouse_sensitivity;
 
     this->yaw += xoffset;
     this->pitch += yoffset;
@@ -54,14 +54,14 @@ void Camera::process_mouse_movement(float xoffset, float yoffset, bool constrain
         this->pitch = std::min(this->pitch, 89.99F);
         this->pitch = std::max(this->pitch, -89.99F);
     }
-    
+
     if (this->yaw > 180.0F) {
-        float delta = this->yaw - 180.0F; 
-        this->yaw = -180.0F + delta; 
+        float delta = this->yaw - 180.0F;
+        this->yaw = -180.0F + delta;
     }
     if (this->yaw < -180.0F) {
-        float delta = -180.0F - this->yaw; 
-        this->yaw = 180.0F - delta; 
+        float delta = -180.0F - this->yaw;
+        this->yaw = 180.0F - delta;
     }
 
     this->update_direction_vectors();
@@ -109,6 +109,11 @@ void Camera::set_pitch(float pitch) noexcept
 void Camera::set_aspect_ratio(float aspect_ratio) noexcept
 {
     this->aspect_ratio = aspect_ratio;
+}
+
+void Camera::set_mouse_sensitivity(float sensitivity) noexcept
+{
+    this->mouse_sensitivity = sensitivity;
 }
 
 auto Camera::get_position() const noexcept -> glm::vec3
@@ -164,6 +169,11 @@ auto Camera::get_right_vector() const noexcept -> glm::vec3
 auto Camera::get_aspect_ratio() const noexcept -> float
 {
     return this->aspect_ratio;
+}
+
+auto Camera::get_mouse_sensitivity() const noexcept -> float
+{
+    return this->mouse_sensitivity;
 }
 
 auto Camera::get_view_matrix() const noexcept -> glm::mat4

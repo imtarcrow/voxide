@@ -49,7 +49,7 @@ void ChunkMesh::generate(const Chunk& chunk)
     std::vector<std::uint32_t> verticies;
     std::vector<GLuint> indicies;
 
-    auto push_face = [&](int xpos, int ypos, int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2, glm::uvec3 pos3, std::uint8_t dir,
+    auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2, glm::uvec3 pos3, std::uint8_t dir,
                          std::uint8_t texture) {
         GLuint base = verticies.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
@@ -59,9 +59,9 @@ void ChunkMesh::generate(const Chunk& chunk)
         verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos3, dir, texture));
     };
 
-    for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
-        for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
-            for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+    for (unsigned int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
+        for (unsigned int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
+            for (unsigned int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
 
                 std::uint8_t current_block = chunk.get_block_at(glm::ivec3(xpos, ypos, zpos));
                 if (current_block == 0) {
@@ -111,17 +111,20 @@ void ChunkMesh::generate(const Chunk& chunk)
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
 
-    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(std::uint32_t), verticies.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(GLuint), indicies.data(), GL_STATIC_DRAW);
+    auto verticies_size = static_cast<GLsizei>(verticies.size() * sizeof(std::uint32_t));
+    auto indicies_size = static_cast<GLsizei>(indicies.size() * sizeof(std::uint32_t));
+
+    glBufferData(GL_ARRAY_BUFFER, verticies_size, verticies.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies_size, indicies.data(), GL_STATIC_DRAW);
 
     glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(std::uint32_t), nullptr);
     glEnableVertexAttribArray(0);
 
-    this->indicies_size = indicies.size();
+    this->index_count = static_cast<GLsizei>(indicies.size());
 }
 
 void ChunkMesh::render() const
 {
     glBindVertexArray(this->VAO);
-    glDrawElements(GL_TRIANGLES, this->indicies_size, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, this->index_count, GL_UNSIGNED_INT, nullptr);
 }

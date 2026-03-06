@@ -5,12 +5,6 @@
 #include "glad/glad.h"
 #include <glm/glm.hpp>
 
-using Vertex = struct Vertex {
-    glm::uvec3 position{0.0F, 0.0F, 0.0F};
-    std::uint8_t dir;
-    unsigned int texture{};
-};
-
 class Chunk;
 
 class ChunkMesh
@@ -20,7 +14,7 @@ private:
     GLuint VBO = 0;
     GLuint EBO = 0;
 
-    unsigned long indicies_size = 0;
+    GLsizei index_count = 0;
 
     [[nodiscard]] auto pack_vertex_data(glm::uvec3 position, std::uint8_t direction, std::uint8_t texture) const noexcept -> std::uint32_t;
 
