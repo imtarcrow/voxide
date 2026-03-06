@@ -27,7 +27,7 @@ private:
     float yaw;
     float pitch;
 
-    float mouse_sensitivity = 0.1F;
+    float look_sensitivity = 0.1F;
 
     float fovy;
     float aspect_ratio;
@@ -64,7 +64,7 @@ public:
 
     void set_aspect_ratio(float aspect_ratio) noexcept;
 
-    void set_mouse_sensitivity(float sensitivity) noexcept;
+    void set_look_sensitivity(float sensitivity) noexcept;
 
     [[nodiscard]] auto get_position() const noexcept -> glm::vec3;
     [[nodiscard]] auto get_x() const noexcept -> float;
@@ -81,7 +81,7 @@ public:
 
     [[nodiscard]] auto get_aspect_ratio() const noexcept -> float;
 
-    [[nodiscard]] auto get_mouse_sensitivity() const noexcept -> float;
+    [[nodiscard]] auto get_look_sensitivity() const noexcept -> float;
 
     [[nodiscard]] auto get_view_matrix() const noexcept -> glm::mat4;
     [[nodiscard]] auto get_projection_matrix() const noexcept -> glm::mat4;
