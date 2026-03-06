@@ -71,6 +71,20 @@ void Engine::handle_movement(float delta_time) noexcept
 
     const float sensitivity = 20.0F;
 
+    if(keys[SDL_SCANCODE_LEFT]) {
+        this->camera->process_mouse_movement(-10.0F, 0.0F, true);
+    }
+    if(keys[SDL_SCANCODE_RIGHT]) {
+        this->camera->process_mouse_movement(10.0F, 0.0F, true);
+    }
+
+    if(keys[SDL_SCANCODE_UP]) {
+        this->camera->process_mouse_movement(0.0F, 10.0F, true);
+    }
+    if(keys[SDL_SCANCODE_DOWN]) {
+        this->camera->process_mouse_movement(0.0F, -10.0F, true);
+    }
+
     if (keys[SDL_SCANCODE_W]) {
         this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * sensitivity * delta_time);
     }
