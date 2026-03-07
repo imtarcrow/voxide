@@ -31,6 +31,44 @@ ChunkMesh::~ChunkMesh()
     glDeleteVertexArrays(1, &this->VAO);
 }
 
+ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
+    : VAO(other.VAO)
+    , VBO(other.VBO)
+    , EBO(other.EBO)
+    , index_count(other.index_count)
+{
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+    other.index_count = 0;
+}
+
+auto ChunkMesh::operator=(ChunkMesh&& other) noexcept -> ChunkMesh&
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    if (VAO)
+        glDeleteVertexArrays(1, &VAO);
+    if (VBO)
+        glDeleteBuffers(1, &VBO);
+    if (EBO)
+        glDeleteBuffers(1, &EBO);
+
+    VAO = other.VAO;
+    VBO = other.VBO;
+    EBO = other.EBO;
+    index_count = other.index_count;
+
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+    other.index_count = 0;
+
+    return *this;
+}
+
 auto ChunkMesh::pack_vertex_data(glm::uvec3 position, std::uint8_t direction, std::uint8_t texture) const noexcept -> std::uint32_t
 {
     std::uint32_t data = 0;
@@ -49,8 +87,8 @@ void ChunkMesh::generate(const Chunk& chunk)
     std::vector<std::uint32_t> verticies;
     std::vector<GLuint> indicies;
 
-    auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2, glm::uvec3 pos3, std::uint8_t dir,
-                         std::uint8_t texture) {
+    auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2,
+                         glm::uvec3 pos3, std::uint8_t dir, std::uint8_t texture) {
         GLuint base = verticies.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
         verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos0, dir, texture));
@@ -121,9 +159,13 @@ void ChunkMesh::generate(const Chunk& chunk)
     glEnableVertexAttribArray(0);
 
     this->index_count = static_cast<GLsizei>(indicies.size());
+
+    glm::vec3 chunk_position = chunk.get_position();
+    spdlog::debug("Generated Chunk mesh at position x={},y={},z={} \n - Vertex data: {}B, Index data: {}B", chunk_position.x,
+                  chunk_position.y, chunk_position.z, verticies.size() * sizeof(std::uint32_t), indicies.size() * sizeof(GLuint));
 }
 
-void ChunkMesh::render() const
+void ChunkMesh::render() const noexcept
 {
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->index_count, GL_UNSIGNED_INT, nullptr);

@@ -27,11 +27,11 @@ public:
     auto operator=(const ChunkMesh&) -> ChunkMesh& = delete;
 
     // enable moving
-    ChunkMesh(ChunkMesh&&) noexcept = default;
-    auto operator=(ChunkMesh&&) noexcept -> ChunkMesh& = default;
+    ChunkMesh(ChunkMesh&&) noexcept;
+    auto operator=(ChunkMesh&&) noexcept -> ChunkMesh&;
 
     void generate(const Chunk& chunk);
-    void render() const;
+    void render() const noexcept;
 };
 
 #endif // VOXIDE_CHUNK_MESH_HEADER

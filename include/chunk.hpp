@@ -28,8 +28,6 @@ private:
     [[nodiscard]] auto validate_coordinates(glm::ivec3 position) const noexcept -> bool;
 
 public:
-    int indicies_size = 0;
-
     Chunk(glm::ivec3 position);
     ~Chunk() = default;
 
