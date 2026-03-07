@@ -15,7 +15,7 @@ constexpr float DEFAULT_ASPECT_RATIO = 16.0F / 9.0F;
 constexpr float DEFAULT_LOOK_SENSITIVITY = 0.1F;
 
 constexpr float NEAR_PLANE = 0.01F;
-constexpr float FAR_PLANE = 1000.0F;
+constexpr float FAR_PLANE = 10000.0F;
 
 class Camera
 {

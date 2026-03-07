@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_map>
 #ifndef VOXIDE_GAME_HEADER
 #define VOXIDE_GAME_HEADER
 
@@ -28,11 +29,10 @@ private:
     std::unique_ptr<Window> window;
     std::unique_ptr<ShaderProgram> program;
     std::unique_ptr<Camera> camera;
-    std::unique_ptr<Chunk> chunk;
-    std::unique_ptr<Chunk> chunk1;
 
-    std::vector<Chunk> chunks;
+    std::unordered_map<std::uint64_t, Chunk> chunks;
 
+    std::unique_ptr<Chunk> debug_chunk;
 
     FrameData frame_data;
     float total_time_passed = 0.0F;
