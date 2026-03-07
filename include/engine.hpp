@@ -32,8 +32,6 @@ private:
 
     std::unordered_map<std::uint64_t, Chunk> chunks;
 
-    std::unique_ptr<Chunk> debug_chunk;
-
     FrameData frame_data;
     float total_time_passed = 0.0F;
     float time_since_last_log = 0.0F;
