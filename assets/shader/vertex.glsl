@@ -15,7 +15,7 @@ void main() {
     uint dir = (data >> 15u) & 0x7u;
     uint texture = (data >> 18u) & 0x3Fu;
 
-    gl_Position = projection * view * model * vec4(x, y, z, 1.0);
+    gl_Position = projection * view * model * vec4(x - 0.5, y - 0.5, z - 0.5, 1.0);
 
     if (dir == 0u) vcolor = vec3(1.0, 0.0, 0.0); // X+
     else if (dir == 1u) vcolor = vec3(0.5, 0.0, 0.0); // X-

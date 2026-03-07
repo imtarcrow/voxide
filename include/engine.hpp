@@ -31,6 +31,9 @@ private:
     std::unique_ptr<Chunk> chunk;
     std::unique_ptr<Chunk> chunk1;
 
+    std::vector<Chunk> chunks;
+
+
     FrameData frame_data;
     float total_time_passed = 0.0F;
     float time_since_last_log = 0.0F;

@@ -49,7 +49,7 @@ void Engine::init()
 {
     this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), glm::vec2(0.0F, 0.0F), 90.0F,
+    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), 00.0F, 0.0F, 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     this->chunk = std::make_unique<Chunk>(glm::ivec3(0, 0, 0));
@@ -59,7 +59,7 @@ void Engine::init()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     this->window->set_capturing_mouse(true);
     this->initialize_imgui();
@@ -71,18 +71,18 @@ void Engine::handle_movement(float delta_time) noexcept
 
     const float sensitivity = 20.0F;
 
-    if(keys[SDL_SCANCODE_LEFT]) {
-        this->camera->process_mouse_movement(-10.0F, 0.0F, true);
+    if (keys[SDL_SCANCODE_LEFT]) {
+        this->camera->handle_look_input(-1000.0F * delta_time, 0.0F * delta_time, true);
     }
-    if(keys[SDL_SCANCODE_RIGHT]) {
-        this->camera->process_mouse_movement(10.0F, 0.0F, true);
+    if (keys[SDL_SCANCODE_RIGHT]) {
+        this->camera->handle_look_input(1000.0F * delta_time, 0.0F * delta_time, true);
     }
 
-    if(keys[SDL_SCANCODE_UP]) {
-        this->camera->process_mouse_movement(0.0F, 10.0F, true);
+    if (keys[SDL_SCANCODE_UP]) {
+        this->camera->handle_look_input(0.0F * delta_time, 1000.0F * delta_time, true);
     }
-    if(keys[SDL_SCANCODE_DOWN]) {
-        this->camera->process_mouse_movement(0.0F, -10.0F, true);
+    if (keys[SDL_SCANCODE_DOWN]) {
+        this->camera->handle_look_input(0.0F * delta_time, -1000.0F * delta_time, true);
     }
 
     if (keys[SDL_SCANCODE_W]) {
@@ -152,7 +152,7 @@ void Engine::process_events() noexcept
         }
 
         if (event.type == SDL_EVENT_MOUSE_MOTION && this->window->is_capturing_mouse()) {
-            this->camera->process_mouse_movement(event.motion.xrel, -event.motion.yrel, true);
+            this->camera->handle_look_input(event.motion.xrel, -event.motion.yrel, true);
         }
         if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
             this->window->set_capturing_mouse(!this->window->is_capturing_mouse());
@@ -204,7 +204,9 @@ void Engine::run()
         }
 
         ImGui::Begin("Info", nullptr, 0);
-        ImGui::Text("Position: X: %.2f Y: %.2f Z: %.2f", this->camera->get_x(), this->camera->get_y(), this->camera->get_z());
+
+        glm::vec3 camera_position = this->camera->get_position();
+        ImGui::Text("Position: X: %.2f Y: %.2f Z: %.2f", camera_position.x, camera_position.y, camera_position.z);
         ImGui::Text("Orientation: Yaw: %.2f Pitch: %.2f", this->camera->get_yaw(), this->camera->get_pitch());
         ImGui::End();
 
