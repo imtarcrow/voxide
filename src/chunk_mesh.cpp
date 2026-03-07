@@ -13,22 +13,23 @@ ChunkMesh::ChunkMesh()
     glGenBuffers(1, &this->EBO);
     glGenVertexArrays(1, &this->VAO);
 
-    if (this->VBO == GL_INVALID_VALUE || this->EBO == GL_INVALID_VALUE) {
-        spdlog::error("glGenBuffers returned GL_INVALID_VALUE");
-        throw std::runtime_error("glGenBuffers returned GL_INVALID_VALUE");
+    if (this->VBO == 0 || this->EBO == 0) {
+        GLenum error = glGetError();
+        spdlog::error("glGenBuffers returned an Error: {} ", error);
+        throw std::runtime_error("glGenBuffers returned an Error");
     }
-
-    if (this->VAO == GL_INVALID_VALUE) {
-        spdlog::error("glGenVertexArrays returned GL_INVALID_VALUE");
-        throw std::runtime_error("glGenVertexArrays returned GL_INVALID_VALUE");
+    if (this->VAO == 0) {
+        GLenum error = glGetError();
+        spdlog::error("glGenVertexArrays returned an Error: {}", error);
+        throw std::runtime_error("glGenVertexArrays returned an Error");
     }
 }
 
 ChunkMesh::~ChunkMesh()
 {
-    glDeleteBuffers(1, &this->VBO);
-    glDeleteBuffers(1, &this->EBO);
-    glDeleteVertexArrays(1, &this->VAO);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 }
 
 ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
@@ -88,7 +89,7 @@ void ChunkMesh::generate(const Chunk& chunk)
     std::vector<GLuint> indicies;
 
     auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2,
-                         glm::uvec3 pos3, std::uint8_t dir, std::uint8_t texture) {
+                         glm::uvec3 pos3, std::uint8_t dir, std::uint8_t texture) -> void {
         GLuint base = verticies.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
         verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos0, dir, texture));
