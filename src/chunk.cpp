@@ -19,19 +19,17 @@ Chunk::Chunk(glm::ivec3 position)
     for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
         for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
             float value = noise.GetNoise(static_cast<float>(xpos + (position.x * 16)), static_cast<float>(zpos + (position.z * 16)));
-            value = ((value + 1.0F) / 2.0F) * 50;
+            value = ((value + 1.0F) / 2.0F) * 20;
 
             int height = static_cast<int>(value);
 
             for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
 
-                if (ypos + (position.y * CHUNK_SIZE_Y) < height)
+                if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height)
                     this->set_block_at({ xpos, ypos, zpos }, 1);
             }
         }
     }
-
-    // spdlog::debug("Created Chunk at {} {} {}", position.x, position.y, position.z);
 
     this->mesh = std::make_unique<ChunkMesh>();
     this->mesh->generate(*this);

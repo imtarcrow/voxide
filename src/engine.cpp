@@ -53,13 +53,12 @@ void Engine::init()
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     int chunk_count = 0;
-    chunks.reserve(30 * 30 * 8);
-    for (int xpos = -15; xpos < 15; xpos++) {
-        for (int zpos = -15; zpos < 15; zpos++) {
-            for (int ypos = -5; ypos < 3; ypos++) {
+    chunks.reserve(10 * 10 * 3);
+    for (int xpos = -5; xpos < 5; xpos++) {
+        for (int zpos = -5; zpos < 5; zpos++) {
+            for (int ypos = -1; ypos < 1; ypos++) {
                 try {
                     chunk_count++;
-                    spdlog::debug("Chunk Key: {}", Chunk::calculate_chunk_key({ xpos, ypos, zpos }));
                     chunks.emplace(Chunk::calculate_chunk_key({ xpos, ypos, zpos }), Chunk { glm::ivec3(xpos, ypos, zpos) });
                 }
                 catch (std::exception& e) {
@@ -69,7 +68,8 @@ void Engine::init()
         }
     }
 
-    GLint total_mem, available_mem;
+    GLint total_mem = 0;
+    GLint available_mem = 0;
     glGetIntegerv(0x9048, &total_mem); // GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_NVX
     glGetIntegerv(0x9049, &available_mem); // GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_NVX
     spdlog::info("VRAM total: {}KB available: {}KB", total_mem, available_mem);
