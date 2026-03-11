@@ -19,12 +19,11 @@ Chunk::Chunk(glm::ivec3 position)
     for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
         for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
             float value = noise.GetNoise(static_cast<float>(xpos + (position.x * 16)), static_cast<float>(zpos + (position.z * 16)));
-            value = ((value + 1.0F) / 2.0F) * 20;
+            value = ((value + 1.0F) / 2.0F) * 32;
 
             int height = static_cast<int>(value);
 
             for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
-
                 if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height)
                     this->set_block_at({ xpos, ypos, zpos }, 1);
             }
@@ -70,13 +69,17 @@ void Chunk::set_position(glm::ivec3 position) noexcept
     this->position = position;
 }
 
-auto Chunk::calculate_chunk_key(glm::ivec3 position) noexcept -> std::uint64_t
-{ // Bias to make all values positive
-    auto ux = static_cast<uint64_t>(position.x + 0x800000); // 24 bit bias
-    auto uy = static_cast<uint64_t>(position.y + 0x8000); // 16 bit bias
-    auto uz = static_cast<uint64_t>(position.z + 0x800000); // 24 bit bias
-
-    return (ux << 40U) | (uy << 24U) | uz;
+uint64_t Chunk::calculate_chunk_key(const glm::ivec3& position) noexcept {
+    uint64_t hash = 0;
+    hash ^= static_cast<uint64_t>(position.x) * 2654435761; // Golden ratio prime
+    hash ^= static_cast<uint64_t>(position.y) * 2654435761 << 21; 
+    hash ^= static_cast<uint64_t>(position.z) * 2654435761 << 42; 
+    hash ^= (hash >> 30); // Mixing bits
+    hash *= 0xbf58476d1ce4e5b; // Another prime
+    hash ^= (hash >> 27); 
+    hash *= 0x94d049bb133111eb; 
+    hash ^= (hash >> 31);
+    return hash;
 }
 
 auto Chunk::get_chunk_key() const noexcept -> std::uint64_t

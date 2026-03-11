@@ -49,14 +49,14 @@ void Engine::init()
 {
     this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
-    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 0.0F, 0.0F), 00.0F, 0.0F, 90.0F,
+    this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     int chunk_count = 0;
     chunks.reserve(10 * 10 * 3);
     for (int xpos = -5; xpos < 5; xpos++) {
         for (int zpos = -5; zpos < 5; zpos++) {
-            for (int ypos = -1; ypos < 1; ypos++) {
+            for (int ypos = 0; ypos < 3; ypos++) {
                 try {
                     chunk_count++;
                     chunks.emplace(Chunk::calculate_chunk_key({ xpos, ypos, zpos }), Chunk { glm::ivec3(xpos, ypos, zpos) });
