@@ -24,6 +24,7 @@ set(SOURCES
     src/camera.cpp
     src/chunk.cpp
     src/chunk_mesh.cpp
+    src/stb_image.cpp
     
     src/glad.c
 
