@@ -1,10 +1,11 @@
 #pragma once
-#include <unordered_map>
 #ifndef VOXIDE_GAME_HEADER
 #define VOXIDE_GAME_HEADER
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
+#include <stb_image.h>
 
 #include "camera.hpp"
 #include "chunk.hpp"
@@ -35,6 +36,11 @@ private:
     FrameData frame_data;
     float total_time_passed = 0.0F;
     float time_since_last_log = 0.0F;
+
+    int texture_atlas_width;
+    int texture_atlas_height;
+    unsigned char* texture_atlas_data;
+    GLuint texture_atlas_handle;
 
     bool should_quit = false;
 

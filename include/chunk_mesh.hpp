@@ -2,8 +2,27 @@
 #ifndef VOXIDE_CHUNK_MESH_HEADER
 #define VOXIDE_CHUNK_MESH_HEADER
 
-#include "glad/glad.h"
 #include <glm/glm.hpp>
+
+#include "glad/glad.h"
+
+enum Direction : std::uint8_t {
+    XPos = 0,
+    XNeg = 1,
+    YPos = 2,
+    YNeg = 3,
+    ZPos = 4,
+    ZNeg = 5,
+};
+
+using VertexData = struct VertexData
+{
+    glm::uvec3 position;
+    std::uint16_t texture;
+    Direction direction;
+    std::uint8_t corner;
+    std::uint8_t ambient_occlusion;
+};
 
 class Chunk;
 
@@ -16,9 +35,9 @@ private:
 
     GLsizei index_count = 0;
 
-    [[nodiscard]] auto pack_vertex_data(glm::uvec3 position, std::uint8_t direction, std::uint8_t texture) const noexcept -> std::uint32_t;
+    [[nodiscard]] auto pack_vertex_data(VertexData data) const noexcept -> std::uint32_t;
 
-public: 
+public:
     ChunkMesh();
     ~ChunkMesh();
 

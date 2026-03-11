@@ -70,17 +70,19 @@ auto ChunkMesh::operator=(ChunkMesh&& other) noexcept -> ChunkMesh&
     return *this;
 }
 
-auto ChunkMesh::pack_vertex_data(glm::uvec3 position, std::uint8_t direction, std::uint8_t texture) const noexcept -> std::uint32_t
+auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_t
 {
-    std::uint32_t data = 0;
+    std::uint32_t packed = 0;
 
-    data = data | (static_cast<std::uint32_t>(position.x) << 0U);
-    data = data | (static_cast<std::uint32_t>(position.y) << 5U);
-    data = data | (static_cast<std::uint32_t>(position.z) << 10U);
-    data = data | (static_cast<std::uint32_t>(direction) << 15U);
-    data = data | ((static_cast<std::uint32_t>(texture) & 0x3FU) << 18U);
-
-    return data;
+    packed |= static_cast<std::uint32_t>(data.position.x & 0x1FU) << 27U;
+    packed |= static_cast<std::uint32_t>(data.position.y & 0x1FU) << 22U;
+    packed |= static_cast<std::uint32_t>(data.position.z & 0x1FU) << 17U;
+    packed |= static_cast<std::uint32_t>(data.texture & 0x1FFU) << 8U;
+    packed |= static_cast<std::uint32_t>(data.direction & 0x7U) << 6U;
+    packed |= static_cast<std::uint32_t>(data.corner & 0x3U) << 4U;
+    packed |= static_cast<std::uint32_t>(data.ambient_occlusion & 0x3U) << 2U;
+    
+    return packed;
 }
 
 void ChunkMesh::generate(const Chunk& chunk)
@@ -89,13 +91,13 @@ void ChunkMesh::generate(const Chunk& chunk)
     std::vector<GLuint> indicies;
 
     auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2,
-                         glm::uvec3 pos3, std::uint8_t dir, std::uint8_t texture) -> void {
+                         glm::uvec3 pos3, Direction direction, std::uint8_t texture) -> void {
         GLuint base = verticies.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
-        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos0, dir, texture));
-        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos1, dir, texture));
-        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos2, dir, texture));
-        verticies.push_back(this->pack_vertex_data(glm::uvec3(xpos, ypos, zpos) + pos3, dir, texture));
+        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos0, texture, direction, 0, 0}));
+        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos1, texture, direction, 1, 0}));
+        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos2, texture, direction, 2, 0}));
+        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos3, texture, direction, 3, 0}));
     };
 
     for (unsigned int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
@@ -110,37 +112,37 @@ void ChunkMesh::generate(const Chunk& chunk)
                 // X+ facing
                 std::uint8_t block_id = chunk.get_block_at({ xpos + 1, ypos, zpos });
                 if (block_id == 0) {
-                    push_face(xpos, ypos, zpos, { 1, 1, 1 }, { 1, 0, 1 }, { 1, 0, 0 }, { 1, 1, 0 }, 0, current_block);
+                    push_face(xpos, ypos, zpos, { 1, 1, 1 }, { 1, 0, 1 }, { 1, 0, 0 }, { 1, 1, 0 }, Direction::XPos, current_block);
                 }
 
                 // X- facing
                 block_id = chunk.get_block_at({ xpos - 1, ypos, zpos });
                 if (block_id == 0) {
-                    push_face(xpos, ypos, zpos, { 0, 1, 0 }, { 0, 0, 0 }, { 0, 0, 1 }, { 0, 1, 1 }, 1, current_block);
+                    push_face(xpos, ypos, zpos, { 0, 1, 0 }, { 0, 0, 0 }, { 0, 0, 1 }, { 0, 1, 1 }, Direction::XNeg, current_block);
                 }
 
                 // Z+ facing
                 block_id = chunk.get_block_at({ xpos, ypos, zpos + 1 });
                 if (block_id == 0) {
-                    push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 0, 0, 1 }, { 1, 0, 1 }, { 1, 1, 1 }, 2, current_block);
+                    push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 0, 0, 1 }, { 1, 0, 1 }, { 1, 1, 1 }, Direction::ZPos, current_block);
                 }
 
                 // Z- facing
                 block_id = chunk.get_block_at({ xpos, ypos, zpos - 1 });
                 if (block_id == 0) {
-                    push_face(xpos, ypos, zpos, { 1, 1, 0 }, { 1, 0, 0 }, { 0, 0, 0 }, { 0, 1, 0 }, 3, current_block);
+                    push_face(xpos, ypos, zpos, { 1, 1, 0 }, { 1, 0, 0 }, { 0, 0, 0 }, { 0, 1, 0 }, Direction::ZNeg, current_block);
                 }
 
                 // Y+ facing
                 block_id = chunk.get_block_at({ xpos, ypos + 1, zpos });
                 if (block_id == 0) {
-                    push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 1, 1, 1 }, { 1, 1, 0 }, { 0, 1, 0 }, 4, current_block);
+                    push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 1, 1, 1 }, { 1, 1, 0 }, { 0, 1, 0 }, Direction::YPos, current_block);
                 }
 
                 // Y- facing
                 block_id = chunk.get_block_at({ xpos, ypos - 1, zpos });
                 if (block_id == 0) {
-                    push_face(xpos, ypos, zpos, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 0, 0 }, { 1, 0, 0 }, 5, current_block);
+                    push_face(xpos, ypos, zpos, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 0, 0 }, { 1, 0, 0 }, Direction::YNeg, current_block);
                 }
             }
         }

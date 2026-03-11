@@ -52,6 +52,19 @@ void Engine::init()
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
+    this->texture_atlas_data = stbi_load("./assets/texture_atlas.png", &this->texture_atlas_width, &this->texture_atlas_height, nullptr, 0);
+
+    glGenTextures(1, &this->texture_atlas_handle);
+    glBindTexture(GL_TEXTURE_2D, this->texture_atlas_handle);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->texture_atlas_width, this->texture_atlas_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 this->texture_atlas_data);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
     int chunk_count = 0;
     chunks.reserve(10 * 10 * 3);
     for (int xpos = -5; xpos < 5; xpos++) {
@@ -267,4 +280,7 @@ void Engine::run()
 
     // needed to avoid segmentation fault when force quitting
     SDL_SetWindowRelativeMouseMode(this->window->get_window_handle(), false);
+
+    glDeleteTextures(1, &this->texture_atlas_handle);
+    stbi_image_free(this->texture_atlas_data);
 }
