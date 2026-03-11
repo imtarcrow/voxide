@@ -49,7 +49,7 @@ public:
 
     [[nodiscard]] auto get_chunk_key() const noexcept -> std::uint64_t;
     
-    static auto calculate_chunk_key(glm::ivec3 position) noexcept -> std::uint64_t;
+    static auto calculate_chunk_key(const glm::ivec3& position) noexcept -> std::uint64_t;
 };
 
 #endif // VOXIDE_CHUNK_HEADER
