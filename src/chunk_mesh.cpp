@@ -77,7 +77,7 @@ auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_
     packed |= static_cast<std::uint32_t>(data.position.x & 0x1FU) << 27U;
     packed |= static_cast<std::uint32_t>(data.position.y & 0x1FU) << 22U;
     packed |= static_cast<std::uint32_t>(data.position.z & 0x1FU) << 17U;
-    packed |= static_cast<std::uint32_t>(data.texture & 0x1FFU) << 8U;
+    packed |= static_cast<std::uint32_t>(data.texture & 0xFFU) << 9U;
     packed |= static_cast<std::uint32_t>(data.direction & 0x7U) << 6U;
     packed |= static_cast<std::uint32_t>(data.corner & 0x3U) << 4U;
     packed |= static_cast<std::uint32_t>(data.ambient_occlusion & 0x3U) << 2U;

@@ -60,7 +60,7 @@ void Engine::init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->texture_atlas_width, this->texture_atlas_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->texture_atlas_width, this->texture_atlas_height, 0, GL_RGB, GL_UNSIGNED_BYTE,
                  this->texture_atlas_data);
 
     glGenerateMipmap(GL_TEXTURE_2D);
