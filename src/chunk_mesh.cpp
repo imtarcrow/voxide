@@ -81,7 +81,7 @@ auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_
     packed |= static_cast<std::uint32_t>(data.direction & 0x7U) << 6U;
     packed |= static_cast<std::uint32_t>(data.corner & 0x3U) << 4U;
     packed |= static_cast<std::uint32_t>(data.ambient_occlusion & 0x3U) << 2U;
-    
+
     return packed;
 }
 
@@ -94,10 +94,10 @@ void ChunkMesh::generate(const Chunk& chunk)
                          glm::uvec3 pos3, Direction direction, std::uint8_t texture) -> void {
         GLuint base = verticies.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
-        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos0, texture, direction, 0, 0}));
-        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos1, texture, direction, 1, 0}));
-        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos2, texture, direction, 2, 0}));
-        verticies.push_back(this->pack_vertex_data({glm::uvec3(xpos, ypos, zpos) + pos3, texture, direction, 3, 0}));
+        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos0, texture, direction, 0, 0 }));
+        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos1, texture, direction, 1, 0 }));
+        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos2, texture, direction, 2, 0 }));
+        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos3, texture, direction, 3, 0 }));
     };
 
     for (unsigned int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {

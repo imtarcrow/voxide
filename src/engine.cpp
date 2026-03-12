@@ -66,10 +66,10 @@ void Engine::init()
     glGenerateMipmap(GL_TEXTURE_2D);
 
     int chunk_count = 0;
-    chunks.reserve(10 * 10 * 3);
-    for (int xpos = -5; xpos < 5; xpos++) {
-        for (int zpos = -5; zpos < 5; zpos++) {
-            for (int ypos = 0; ypos < 3; ypos++) {
+    chunks.reserve(30 * 30 * 5);
+    for (int xpos = -15; xpos < 15; xpos++) {
+        for (int zpos = -15; zpos < 15; zpos++) {
+            for (int ypos = 0; ypos < 5; ypos++) {
                 try {
                     chunk_count++;
                     chunks.emplace(Chunk::calculate_chunk_key({ xpos, ypos, zpos }), Chunk { glm::ivec3(xpos, ypos, zpos) });
