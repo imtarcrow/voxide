@@ -11,7 +11,7 @@ auto main() -> int
     spdlog::set_level(spdlog::level::trace);
     spdlog::info("Starting...");
 
-    auto *engine = new Engine();
+    auto* engine = new Engine();
 
     engine->init();
     engine->run();

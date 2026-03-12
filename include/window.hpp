@@ -70,8 +70,6 @@ public:
     [[nodiscard]] auto is_capturing_mouse() const noexcept -> bool;
 
     [[nodiscard]] auto get_vsync_mode() const noexcept -> int;
-
-    
 };
 
 #endif // !VOXIDE_WINDOW_HEADER

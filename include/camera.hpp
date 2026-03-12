@@ -5,8 +5,8 @@
 #include <glm/glm.hpp>
 
 constexpr glm::vec3 WORLD_UP = { 0.0F, 1.0F, 0.0F };
-constexpr glm::vec3 DEFAULT_FRONT = {0.0F, 0.0F, -1.0F};
-constexpr glm::vec3 DEFAULT_RIGHT = {1.0F, 0.0F, 0.0F};
+constexpr glm::vec3 DEFAULT_FRONT = { 0.0F, 0.0F, -1.0F };
+constexpr glm::vec3 DEFAULT_RIGHT = { 1.0F, 0.0F, 0.0F };
 
 constexpr float DEFAULT_YAW = -90.0F;
 constexpr float DEFAULT_PITCH = 0.0F;

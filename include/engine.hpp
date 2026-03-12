@@ -3,9 +3,9 @@
 #define VOXIDE_GAME_HEADER
 
 #include <memory>
-#include <vector>
-#include <unordered_map>
 #include <stb_image.h>
+#include <unordered_map>
+#include <vector>
 
 #include "camera.hpp"
 #include "chunk.hpp"

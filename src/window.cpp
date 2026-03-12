@@ -34,7 +34,7 @@ auto Window::create_context() -> bool
 
     // 24-bit depth buffer
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    
+
     SDL_GLContext context = SDL_GL_CreateContext(this->window_handle);
     if (context == nullptr) {
         spdlog::error("Failed to create SDL3 OpenGL context: {}", SDL_GetError());
@@ -50,8 +50,8 @@ auto Window::create_context() -> bool
 
     int minor = 0;
     int major = 0;
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major); 
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor); 
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
     spdlog::info("OpenGL {}.{} Context!", major, minor);
 
@@ -74,7 +74,7 @@ Window::Window(const std::string& title, int width = DEFAULT_WIDTH, int height =
         throw std::runtime_error("Failed to create SDL3 Window!");
     }
 
-    if(!this->create_context()) {
+    if (!this->create_context()) {
         throw std::runtime_error("Failed to create SDL3 OpenGL context!");
     }
 
@@ -202,9 +202,10 @@ void Window::set_vsync_mode(int mode) noexcept
     this->vsync_mode = mode;
 }
 
-auto Window::get_title() const noexcept -> std::string {
-    const char* title =  SDL_GetWindowTitle(this->window_handle);
-    return {title};
+auto Window::get_title() const noexcept -> std::string
+{
+    const char* title = SDL_GetWindowTitle(this->window_handle);
+    return { title };
 }
 
 auto Window::get_size() const noexcept -> std::pair<int, int>
