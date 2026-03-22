@@ -5,7 +5,9 @@
 #include <spdlog/spdlog.h>
 
 #include "chunk.hpp"
+#include "coordinates.hpp"
 #include "glad/glad.h"
+#include "world.hpp"
 
 ChunkMesh::ChunkMesh()
 {
@@ -85,63 +87,80 @@ auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_
     return packed;
 }
 
-void ChunkMesh::generate(const Chunk& chunk)
+void ChunkMesh::generate(const Chunk& chunk, const World& world)
 {
-    std::vector<std::uint32_t> verticies;
+    std::vector<std::uint32_t> packed_vertex_data;
     std::vector<GLuint> indicies;
 
-    auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2,
-                         glm::uvec3 pos3, Direction direction, std::uint8_t texture) -> void {
-        GLuint base = verticies.size();
-        indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
-        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos0, texture, direction, 0, 0 }));
-        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos1, texture, direction, 1, 0 }));
-        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos2, texture, direction, 2, 0 }));
-        verticies.push_back(this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos3, texture, direction, 3, 0 }));
+    auto get_block = [&](int xpos, int ypos, int zpos) -> Block {
+        LocalCoord local(xpos, ypos, zpos);
+        if (Chunk::is_inside_chunk(local))
+            return chunk.get_block_at(local).value();
+
+        auto block = world.try_get_block(CoordConvert::local_to_world(local, chunk.get_position()));
+
+        if(!block.has_value()) {
+        }
+
+        return block.value_or(Block::Air);
     };
 
-    for (unsigned int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
-        for (unsigned int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
-            for (unsigned int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+    auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2,
+                         glm::uvec3 pos3, Direction direction, Block block) -> void {
+        GLuint base = packed_vertex_data.size();
+        indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
+        packed_vertex_data.push_back(
+            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos0, static_cast<std::uint8_t>(block), direction, 0, 0 }));
+        packed_vertex_data.push_back(
+            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos1, static_cast<std::uint8_t>(block), direction, 1, 0 }));
+        packed_vertex_data.push_back(
+            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos2, static_cast<std::uint8_t>(block), direction, 2, 0 }));
+        packed_vertex_data.push_back(
+            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos3, static_cast<std::uint8_t>(block), direction, 3, 0 }));
+    };
 
-                std::uint8_t current_block = chunk.get_block_at(glm::ivec3(xpos, ypos, zpos));
-                if (current_block == 0) {
+    for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
+        for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
+            for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+
+                Block current_block = chunk.get_block_at(LocalCoord(xpos, ypos, zpos)).value();
+                if(current_block == Block::Air) {
                     continue;
                 }
 
                 // X+ facing
-                std::uint8_t block_id = chunk.get_block_at({ xpos + 1, ypos, zpos });
-                if (block_id == 0) {
+                Block neighbor = get_block(xpos + 1, ypos, zpos);
+                if (neighbor == Block::Air) {
                     push_face(xpos, ypos, zpos, { 1, 1, 1 }, { 1, 0, 1 }, { 1, 0, 0 }, { 1, 1, 0 }, Direction::XPos, current_block);
                 }
-
+                
                 // X- facing
-                block_id = chunk.get_block_at({ xpos - 1, ypos, zpos });
-                if (block_id == 0) {
+                neighbor = get_block(xpos - 1, ypos, zpos);
+                if (neighbor == Block::Air) {
                     push_face(xpos, ypos, zpos, { 0, 1, 0 }, { 0, 0, 0 }, { 0, 0, 1 }, { 0, 1, 1 }, Direction::XNeg, current_block);
                 }
 
                 // Z+ facing
-                block_id = chunk.get_block_at({ xpos, ypos, zpos + 1 });
-                if (block_id == 0) {
+                neighbor = get_block(xpos, ypos, zpos + 1);
+                if (neighbor == Block::Air) {
                     push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 0, 0, 1 }, { 1, 0, 1 }, { 1, 1, 1 }, Direction::ZPos, current_block);
                 }
 
                 // Z- facing
-                block_id = chunk.get_block_at({ xpos, ypos, zpos - 1 });
-                if (block_id == 0) {
+                neighbor = get_block(xpos, ypos, zpos - 1);
+                if (neighbor == Block::Air) {
                     push_face(xpos, ypos, zpos, { 1, 1, 0 }, { 1, 0, 0 }, { 0, 0, 0 }, { 0, 1, 0 }, Direction::ZNeg, current_block);
                 }
 
                 // Y+ facing
-                block_id = chunk.get_block_at({ xpos, ypos + 1, zpos });
-                if (block_id == 0) {
+                neighbor = get_block(xpos, ypos + 1, zpos);
+                if (neighbor == Block::Air) {
                     push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 1, 1, 1 }, { 1, 1, 0 }, { 0, 1, 0 }, Direction::YPos, current_block);
                 }
 
                 // Y- facing
-                block_id = chunk.get_block_at({ xpos, ypos - 1, zpos });
-                if (block_id == 0) {
+                neighbor = get_block(xpos, ypos - 1, zpos);
+                if (neighbor == Block::Air) {
                     push_face(xpos, ypos, zpos, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 0, 0 }, { 1, 0, 0 }, Direction::YNeg, current_block);
                 }
             }
@@ -152,20 +171,19 @@ void ChunkMesh::generate(const Chunk& chunk)
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
 
-    auto verticies_size = static_cast<GLsizei>(verticies.size() * sizeof(std::uint32_t));
+    auto verticies_size = static_cast<GLsizei>(packed_vertex_data.size() * sizeof(std::uint32_t));
     auto indicies_size = static_cast<GLsizei>(indicies.size() * sizeof(std::uint32_t));
 
-    glBufferData(GL_ARRAY_BUFFER, verticies_size, verticies.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies_size, indicies.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, verticies_size, packed_vertex_data.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies_size, indicies.data(), GL_DYNAMIC_DRAW);
 
     glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(std::uint32_t), nullptr);
     glEnableVertexAttribArray(0);
 
     this->index_count = static_cast<GLsizei>(indicies.size());
-
-    glm::vec3 chunk_position = chunk.get_position();
+    ChunkCoord chunk_position = chunk.get_position();
     spdlog::debug("Generated Chunk mesh at position x={},y={},z={} \n - Vertex data: {}B, Index data: {}B", chunk_position.x,
-                  chunk_position.y, chunk_position.z, verticies.size() * sizeof(std::uint32_t), indicies.size() * sizeof(GLuint));
+                  chunk_position.y, chunk_position.z, packed_vertex_data.size() * sizeof(std::uint32_t), indicies.size() * sizeof(GLuint));
 }
 
 void ChunkMesh::render() const noexcept

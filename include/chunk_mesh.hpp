@@ -3,8 +3,10 @@
 #define VOXIDE_CHUNK_MESH_HEADER
 
 #include <glm/glm.hpp>
-
 #include "glad/glad.h"
+
+class Chunk;
+class World;
 
 enum Direction : std::uint8_t {
     XPos = 0,
@@ -23,8 +25,6 @@ using VertexData = struct VertexData
     std::uint8_t corner;
     std::uint8_t ambient_occlusion;
 };
-
-class Chunk;
 
 class ChunkMesh
 {
@@ -49,7 +49,7 @@ public:
     ChunkMesh(ChunkMesh&&) noexcept;
     auto operator=(ChunkMesh&&) noexcept -> ChunkMesh&;
 
-    void generate(const Chunk& chunk);
+    void generate(const Chunk& chunk, const World& world);
     void render() const noexcept;
 };
 
