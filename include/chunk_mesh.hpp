@@ -8,6 +8,15 @@
 class Chunk;
 class World;
 
+constexpr std::array<std::array<glm::uvec3, 4>, 6> corner_positions = {{
+    {glm::uvec3( 1, 1, 1 ), glm::uvec3( 1, 0, 1 ), glm::uvec3( 1, 0, 0 ), glm::uvec3( 1, 1, 0 )}, //X+
+    {glm::uvec3( 0, 1, 0 ), glm::uvec3( 0, 0, 0 ), glm::uvec3( 0, 0, 1 ), glm::uvec3( 0, 1, 1 )}, //X-
+    {glm::uvec3( 0, 1, 1 ), glm::uvec3( 1, 1, 1 ), glm::uvec3( 1, 1, 0 ), glm::uvec3( 0, 1, 0 )}, //Y+
+    {glm::uvec3( 1, 0, 1 ), glm::uvec3( 0, 0, 1 ), glm::uvec3( 0, 0, 0 ), glm::uvec3( 1, 0, 0 )}, //Y-
+    {glm::uvec3( 0, 1, 1 ), glm::uvec3( 0, 0, 1 ), glm::uvec3( 1, 0, 1 ), glm::uvec3( 1, 1, 1 )}, //Z+
+    {glm::uvec3( 1, 1, 0 ), glm::uvec3( 1, 0, 0 ), glm::uvec3( 0, 0, 0 ), glm::uvec3( 0, 1, 0 )}, //Z-
+}};
+
 enum Direction : std::uint8_t {
     XPos = 0,
     XNeg = 1,
@@ -16,6 +25,7 @@ enum Direction : std::uint8_t {
     ZPos = 4,
     ZNeg = 5,
 };
+
 
 using VertexData = struct VertexData
 {

@@ -100,18 +100,17 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
         return block.value_or(Block::Air);
     };
 
-    auto push_face = [&](unsigned int xpos, unsigned int ypos, unsigned int zpos, glm::uvec3 pos0, glm::uvec3 pos1, glm::uvec3 pos2,
-                         glm::uvec3 pos3, Direction direction, Block block) -> void {
+    auto push_face = [&](glm::uvec3 pos, Direction direction, Block block) -> void {
         GLuint base = packed_vertex_data.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
         packed_vertex_data.push_back(
-            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos0, static_cast<std::uint8_t>(block), direction, 0, 0 }));
+            this->pack_vertex_data({ pos + corner_positions[direction][0], static_cast<std::uint8_t>(block), direction, 0, 0 }));
         packed_vertex_data.push_back(
-            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos1, static_cast<std::uint8_t>(block), direction, 1, 0 }));
+            this->pack_vertex_data({ pos + corner_positions[direction][1], static_cast<std::uint8_t>(block), direction, 1, 0 }));
         packed_vertex_data.push_back(
-            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos2, static_cast<std::uint8_t>(block), direction, 2, 0 }));
+            this->pack_vertex_data({ pos + corner_positions[direction][2], static_cast<std::uint8_t>(block), direction, 2, 0 }));
         packed_vertex_data.push_back(
-            this->pack_vertex_data({ glm::uvec3(xpos, ypos, zpos) + pos3, static_cast<std::uint8_t>(block), direction, 3, 0 }));
+            this->pack_vertex_data({ pos + corner_positions[direction][3], static_cast<std::uint8_t>(block), direction, 3, 0 }));
     };
 
     for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
@@ -119,44 +118,44 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
             for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
 
                 Block current_block = chunk.get_block_at(LocalCoord(xpos, ypos, zpos)).value();
-                if(current_block == Block::Air) {
+                if (current_block == Block::Air) {
                     continue;
                 }
 
                 // X+ facing
                 Block neighbor = get_block(xpos + 1, ypos, zpos);
                 if (neighbor == Block::Air) {
-                    push_face(xpos, ypos, zpos, { 1, 1, 1 }, { 1, 0, 1 }, { 1, 0, 0 }, { 1, 1, 0 }, Direction::XPos, current_block);
+                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::XPos, current_block);
                 }
-                
+
                 // X- facing
                 neighbor = get_block(xpos - 1, ypos, zpos);
                 if (neighbor == Block::Air) {
-                    push_face(xpos, ypos, zpos, { 0, 1, 0 }, { 0, 0, 0 }, { 0, 0, 1 }, { 0, 1, 1 }, Direction::XNeg, current_block);
-                }
-
-                // Z+ facing
-                neighbor = get_block(xpos, ypos, zpos + 1);
-                if (neighbor == Block::Air) {
-                    push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 0, 0, 1 }, { 1, 0, 1 }, { 1, 1, 1 }, Direction::ZPos, current_block);
-                }
-
-                // Z- facing
-                neighbor = get_block(xpos, ypos, zpos - 1);
-                if (neighbor == Block::Air) {
-                    push_face(xpos, ypos, zpos, { 1, 1, 0 }, { 1, 0, 0 }, { 0, 0, 0 }, { 0, 1, 0 }, Direction::ZNeg, current_block);
+                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::XNeg, current_block);
                 }
 
                 // Y+ facing
                 neighbor = get_block(xpos, ypos + 1, zpos);
                 if (neighbor == Block::Air) {
-                    push_face(xpos, ypos, zpos, { 0, 1, 1 }, { 1, 1, 1 }, { 1, 1, 0 }, { 0, 1, 0 }, Direction::YPos, current_block);
+                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::YPos, current_block);
                 }
 
                 // Y- facing
                 neighbor = get_block(xpos, ypos - 1, zpos);
                 if (neighbor == Block::Air) {
-                    push_face(xpos, ypos, zpos, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 0, 0 }, { 1, 0, 0 }, Direction::YNeg, current_block);
+                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::YNeg, current_block);
+                }
+
+                // Z+ facing
+                neighbor = get_block(xpos, ypos, zpos + 1);
+                if (neighbor == Block::Air) {
+                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::ZPos, current_block);
+                }
+
+                // Z- facing
+                neighbor = get_block(xpos, ypos, zpos - 1);
+                if (neighbor == Block::Air) {
+                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::ZNeg, current_block);
                 }
             }
         }
