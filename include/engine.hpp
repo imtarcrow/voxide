@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "world.hpp"
 #include "camera.hpp"
 #include "chunk.hpp"
 #include "shader_program.hpp"
@@ -30,8 +31,7 @@ private:
     std::unique_ptr<Window> window;
     std::unique_ptr<ShaderProgram> program;
     std::unique_ptr<Camera> camera;
-
-    std::unordered_map<std::uint64_t, Chunk> chunks;
+    std::unique_ptr<World> world;
 
     FrameData frame_data;
     float total_time_passed = 0.0F;
@@ -41,6 +41,9 @@ private:
     int texture_atlas_height;
     unsigned char* texture_atlas_data;
     GLuint texture_atlas_handle;
+
+    bool checkbox_is_ticked = false;
+    bool checkbox_was_ticked = false;
 
     bool should_quit = false;
 

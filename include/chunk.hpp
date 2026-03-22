@@ -2,33 +2,31 @@
 #ifndef VOXIDE_CHUNK_HEADER
 #define VOXIDE_CHUNK_HEADER
 
-#include <cstddef>
-#include <glm/fwd.hpp>
+#include <cstdint>
 #include <glm/glm.hpp>
 #include <memory>
+#include <optional>
 
+#include "block.hpp"
 #include "chunk_mesh.hpp"
+#include "coordinates.hpp"
 
-// max 31 for each due to vertex data packing into 5 bits
-
-constexpr std::size_t CHUNK_SIZE_X = 16;
-constexpr std::size_t CHUNK_SIZE_Y = 16;
-constexpr std::size_t CHUNK_SIZE_Z = 16;
-constexpr std::size_t CHUNK_SIZE = CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z;
+constexpr std::uint8_t CHUNK_SIZE_X = 16;
+constexpr std::uint8_t CHUNK_SIZE_Y = 16;
+constexpr std::uint8_t CHUNK_SIZE_Z = 16;
+constexpr std::uint16_t CHUNK_SIZE = CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z;
 
 class Chunk
 {
 
 private:
-    std::array<std::uint8_t, CHUNK_SIZE> blocks = { 0 };
+    std::array<Block, CHUNK_SIZE> blocks = { Block::Air };
 
-    glm::ivec3 position;
+    ChunkCoord position;
     std::unique_ptr<ChunkMesh> mesh;
 
-    [[nodiscard]] auto validate_coordinates(glm::ivec3 position) const noexcept -> bool;
-
 public:
-    Chunk(glm::ivec3 position);
+    Chunk(ChunkCoord position);
     ~Chunk() = default;
 
     // disable copying
@@ -39,17 +37,19 @@ public:
     Chunk(Chunk&&) noexcept = default;
     auto operator=(Chunk&&) noexcept -> Chunk& = default;
 
-    void render() const noexcept;
+    static auto calculate_chunk_key(const ChunkCoord& position) noexcept -> std::uint64_t;
 
-    [[nodiscard]] auto get_block_at(glm::ivec3 position) const noexcept -> std::uint8_t;
-    void set_block_at(glm::ivec3 position, std::uint8_t block_id) noexcept;
+    [[nodiscard]] auto get_block_at(LocalCoord position) const noexcept -> std::optional<Block>;
+    void set_block_at(LocalCoord position, Block block) noexcept;
 
-    [[nodiscard]] auto get_position() const noexcept -> glm::ivec3;
-    void set_position(glm::ivec3 position) noexcept;
+    [[nodiscard]] auto get_position() const noexcept -> ChunkCoord;
+    void set_position(ChunkCoord position) noexcept;
 
     [[nodiscard]] auto get_chunk_key() const noexcept -> std::uint64_t;
+    [[nodiscard]] static auto is_inside_chunk(LocalCoord position) noexcept -> bool;
 
-    static auto calculate_chunk_key(const glm::ivec3& position) noexcept -> std::uint64_t;
+    void generate_mesh(const World& world);
+    void render() const noexcept;
 };
 
 #endif // VOXIDE_CHUNK_HEADER

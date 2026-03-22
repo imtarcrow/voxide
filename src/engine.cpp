@@ -52,6 +52,9 @@ void Engine::init()
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
+    this->world = std::make_unique<World>();
+    this->world->generate_area(ChunkCoord(0,0,0), 10, 7, 10);
+
     this->texture_atlas_data = stbi_load("./assets/texture_atlas.png", &this->texture_atlas_width, &this->texture_atlas_height, nullptr, 0);
 
     glGenTextures(1, &this->texture_atlas_handle);
@@ -64,22 +67,6 @@ void Engine::init()
                  this->texture_atlas_data);
 
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    int chunk_count = 0;
-    chunks.reserve(30 * 30 * 5);
-    for (int xpos = -15; xpos < 15; xpos++) {
-        for (int zpos = -15; zpos < 15; zpos++) {
-            for (int ypos = 0; ypos < 5; ypos++) {
-                try {
-                    chunk_count++;
-                    chunks.emplace(Chunk::calculate_chunk_key({ xpos, ypos, zpos }), Chunk { glm::ivec3(xpos, ypos, zpos) });
-                }
-                catch (std::exception& e) {
-                    spdlog::warn("Failed to generate Chunk Mesh #{}", chunk_count);
-                }
-            }
-        }
-    }
 
     GLint total_mem = 0;
     GLint available_mem = 0;
@@ -249,6 +236,24 @@ void Engine::run()
 
         if (!this->window->is_capturing_mouse()) {
             ImGui::Begin("Settings", nullptr, 0);
+            ImGui::Checkbox("Block", &this->checkbox_is_ticked);
+
+            if (this->checkbox_is_ticked != this->checkbox_was_ticked) {
+                
+                // Chunk& chunk = this->chunks.at(Chunk::calculate_chunk_key(glm::ivec3(0, 3, 0)));
+                //
+                // if (this->checkbox_is_ticked) {
+                //     chunk.set_block_at(glm::ivec3(8,16,8), 2);
+                // }
+                // else {
+                //     chunk.set_block_at(glm::ivec3(8,16,8), 0);
+                // }
+                //
+                // chunk.mesh->generate(chunk);
+                //
+                // this->checkbox_was_ticked = this->checkbox_is_ticked;
+            }
+
             ImGui::End();
         }
 
@@ -259,16 +264,16 @@ void Engine::run()
         this->program->set_uniform("view", this->camera->get_view_matrix());
         this->program->set_uniform("projection", this->camera->get_projection_matrix());
 
-        for (auto& [key, chunk] : chunks) {
+        for (const auto& [key, chunk] : this->world->get_loaded_chunks()) {
 
-            glm::ivec3 position = chunk.get_position();
+            ChunkCoord position = chunk->get_position();
             auto model = glm::mat4(1.0F);
             model = glm::translate(model,
                                    { position.x * static_cast<int>(CHUNK_SIZE_X), position.y * static_cast<int>(CHUNK_SIZE_Y),
                                      position.z * static_cast<int>(CHUNK_SIZE_Z) });
             program->set_uniform("model", model);
 
-            chunk.render();
+            chunk->render();
         }
 
         this->end_frame();
