@@ -1,5 +1,6 @@
 #include "world.hpp"
 
+#include <random>
 #include <spdlog/spdlog.h>
 
 #include "FastNoiseLite.h"
@@ -10,7 +11,12 @@ World::World()
 {
     this->noise_generator.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     this->noise_generator.SetSeed(1337);
-    this->noise_generator.SetFrequency(0.04F);
+    this->noise_generator.SetFrequency(0.02F);
+
+    this->noise_generator.SetFractalType(FastNoiseLite::FractalType_FBm);
+    this->noise_generator.SetFractalOctaves(3);
+    this->noise_generator.SetFractalLacunarity(2.0F);
+    this->noise_generator.SetFractalGain(0.7F);
 }
 
 auto World::is_chunk_loaded(ChunkCoord position) const noexcept -> bool
@@ -90,6 +96,22 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
         }
     }
 
+    std::random_device dev;
+    std::mt19937_64 rng(dev());
+    std::uniform_real_distribution<double> dist(0, 1);
+
+    for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+        for (int ypos = 0; ypos < CHUNK_SIZE_X; ypos++) {
+            for (int zpos = 0; zpos < CHUNK_SIZE_X; zpos++) {
+                if (dist(rng) < 0.999) {
+                    continue;
+                }
+
+                iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Blue);
+            }
+        }
+    }
+
     return *iterator->second;
 }
 
@@ -109,9 +131,9 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
     for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
         for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
             for (int ypos = -(y_radius / 2); ypos < (y_radius / 2); ypos++) {
-                auto *chunk = this->try_get_chunk(ChunkCoord(xpos, ypos, zpos));
+                auto* chunk = this->try_get_chunk(ChunkCoord(xpos, ypos, zpos));
 
-                if(chunk == nullptr)
+                if (chunk == nullptr)
                     continue;
 
                 chunk->generate_mesh(*this);
