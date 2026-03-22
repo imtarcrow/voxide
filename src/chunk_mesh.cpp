@@ -96,12 +96,7 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
         LocalCoord local(xpos, ypos, zpos);
         if (Chunk::is_inside_chunk(local))
             return chunk.get_block_at(local).value();
-
         auto block = world.try_get_block(CoordConvert::local_to_world(local, chunk.get_position()));
-
-        if(!block.has_value()) {
-        }
-
         return block.value_or(Block::Air);
     };
 
