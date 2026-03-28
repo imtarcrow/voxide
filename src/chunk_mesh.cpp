@@ -89,41 +89,53 @@ auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_
     return packed;
 }
 
-auto ChunkMesh::generate_ao_values(const Chunk& chunk, const World& world, Direction direction, LocalCoord coord)
+auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, WorldCoord coord) -> Block
+{
+    auto chunk_coord = Coords::world_to_chunk(coord);
+    if (chunk_coord == chunk.get_position()) {
+        return chunk.get_block_at(Coords::world_to_local(coord));
+    }
+
+    for (Chunk* neighbor : neighbors) {
+        if (neighbor && chunk_coord == neighbor->get_position()) {
+            return neighbor->get_block_at(Coords::world_to_local(coord));
+        }
+    }
+
+    return Block::Air;
+}
+auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, Direction direction, WorldCoord coord)
     -> std::array<std::uint8_t, 4>
 {
-
     std::array<std::uint8_t, 4> ao_out {};
 
     for (int corner = 0; corner < 4; corner++) {
         const auto& samples = ao_lookup[direction][corner];
 
-        Block side1 = this->get_block(chunk, world, coord + LocalCoord(samples[0]));
-        Block side2 = this->get_block(chunk, world, coord + LocalCoord(samples[1]));
-        Block diagonal = this->get_block(chunk, world, coord + LocalCoord(samples[2]));
+        auto sample_offset = [&](const glm::ivec3& offset) -> Block {
+            return this->get_block(chunk, neighbors,
+                                   WorldCoord { .x = coord.x + offset.x, .y = coord.y + offset.y, .z = coord.z + offset.z });
+        };
 
-        auto isSolid = [&](Block block) -> bool { return block != Block::Air; };
+        const Block side1 = sample_offset(samples[0]);
+        const Block side2 = sample_offset(samples[1]);
+        const Block diagonal = sample_offset(samples[2]);
 
-        int ambient_occlusion
-            = (isSolid(side1) && isSolid(side2)) ? 3 : ((int)isSolid(side1) + (int)isSolid(side2) + (int)isSolid(diagonal));
-        ao_out[corner] = ambient_occlusion;
+        const auto is_solid = [](Block block) { return block != Block::Air; };
+
+        ao_out[corner]
+            = (is_solid(side1) && is_solid(side2)) ? 3 : static_cast<uint8_t>(is_solid(side1) + is_solid(side2) + is_solid(diagonal));
     }
-
     return ao_out;
-}
-
-auto ChunkMesh::get_block(const Chunk& chunk, const World& world, LocalCoord coord) -> Block
-{
-    if (Chunk::is_inside_chunk(coord))
-        return chunk.get_block_at(coord).value();
-    auto block = world.try_get_block(CoordConvert::local_to_world(coord, chunk.get_position()));
-    return block.value_or(Block::Air);
 }
 
 void ChunkMesh::generate(const Chunk& chunk, const World& world)
 {
     std::vector<std::uint32_t> packed_vertex_data;
     std::vector<GLuint> indicies;
+
+    packed_vertex_data.reserve(1024); // 6 faces, 4 verts each
+    indicies.reserve(1536);
 
     auto push_face = [&](glm::uvec3 pos, Direction direction, Block block, std::array<std::uint8_t, 4> ambient_occlusion) -> void {
         GLuint base = packed_vertex_data.size();
@@ -138,62 +150,55 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
             { pos + corner_positions[direction][3], static_cast<std::uint8_t>(block), direction, 3, ambient_occlusion[3] }));
     };
 
-    for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
-        for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
-            for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+    std::array<Chunk*, 6> neighbors = {
+        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 1, .y = 0, .z = 0 }), // X+
+        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = -1, .y = 0, .z = 0 }), // X-
+        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = 1, .z = 0 }), // Y+
+        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = -1, .z = 0 }), // Y-
+        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = 0, .z = 1 }), // Z+
+        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = 0, .z = -1 }), // Z-
+    };
+    const WorldCoord chunk_origin = Coords::chunk_origin(chunk.get_position());
 
-                Block current_block = chunk.get_block_at(LocalCoord(xpos, ypos, zpos)).value();
-                if (current_block == Block::Air) {
+    for (std::uint8_t xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
+        for (std::uint8_t ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
+            for (std::uint8_t zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
+
+                const Block current_block = chunk.get_block_at(LocalCoord::from(xpos, ypos, zpos));
+                if (current_block == Block::Air)
                     continue;
-                }
 
-                // X+ facing
-                Block neighbor = this->get_block(chunk, world, LocalCoord(xpos + 1, ypos, zpos));
-                if (neighbor == Block::Air) {
-                    std::array<std::uint8_t, 4> ao_values
-                        = this->generate_ao_values(chunk, world, Direction::XPos, LocalCoord(xpos, ypos, zpos));
-                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::XPos, current_block, ao_values);
-                }
+                const WorldCoord coord = { .x = chunk_origin.x + xpos, .y = chunk_origin.y + ypos, .z = chunk_origin.z + zpos };
 
-                // X- facing
-                neighbor = this->get_block(chunk, world, LocalCoord(xpos - 1, ypos, zpos));
-                if (neighbor == Block::Air) {
-                    std::array<std::uint8_t, 4> ao_values
-                        = this->generate_ao_values(chunk, world, Direction::XNeg, LocalCoord(xpos, ypos, zpos));
-                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::XNeg, current_block, ao_values);
-                }
+                auto neighbor_block = [&](int delta_x, int delta_y, int delta_z) -> Block {
+                    const int neighbor_x = xpos + delta_x;
+                    const int neighbor_y = ypos + delta_y;
+                    const int neighbor_z = zpos + delta_z;
+                    if (neighbor_x >= 0 && neighbor_x < CHUNK_SIZE_X && neighbor_y >= 0 && neighbor_y < CHUNK_SIZE_Y && neighbor_z >= 0 && neighbor_z < CHUNK_SIZE_Z) {
+                        return chunk.get_block_at(LocalCoord::from(neighbor_x, neighbor_y, neighbor_z));
+                    }
+                    return this->get_block(chunk, neighbors,
+                                           WorldCoord { .x = coord.x + delta_x, .y = coord.y + delta_y, .z = coord.z + delta_z });
+                };
 
-                // Y+ facing
-                neighbor = this->get_block(chunk, world, LocalCoord(xpos, ypos + 1, zpos));
-                if (neighbor == Block::Air) {
-                    std::array<std::uint8_t, 4> ao_values
-                        = this->generate_ao_values(chunk, world, Direction::YPos, LocalCoord(xpos, ypos, zpos));
-                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::YPos, current_block, ao_values);
-                }
-
-                // Y- facing
-                neighbor = this->get_block(chunk, world, LocalCoord(xpos, ypos - 1, zpos));
-                if (neighbor == Block::Air) {
-                    std::array<std::uint8_t, 4> ao_values
-                        = this->generate_ao_values(chunk, world, Direction::YNeg, LocalCoord(xpos, ypos, zpos));
-                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::YNeg, current_block, ao_values);
-                }
-
-                // Z+ facing
-                neighbor = this->get_block(chunk, world, LocalCoord(xpos, ypos, zpos + 1));
-                if (neighbor == Block::Air) {
-                    std::array<std::uint8_t, 4> ao_values
-                        = this->generate_ao_values(chunk, world, Direction::ZPos, LocalCoord(xpos, ypos, zpos));
-                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::ZPos, current_block, ao_values);
-                }
-
-                // Z- facing
-                neighbor = this->get_block(chunk, world, LocalCoord(xpos, ypos, zpos - 1));
-                if (neighbor == Block::Air) {
-                    std::array<std::uint8_t, 4> ao_values
-                        = this->generate_ao_values(chunk, world, Direction::ZNeg, LocalCoord(xpos, ypos, zpos));
-                    push_face(glm::uvec3(xpos, ypos, zpos), Direction::ZNeg, current_block, ao_values);
-                }
+                if (neighbor_block(1, 0, 0) == Block::Air)
+                    push_face({ xpos, ypos, zpos }, Direction::XPos, current_block,
+                              generate_ao_values(chunk, neighbors, Direction::XPos, coord));
+                if (neighbor_block(-1, 0, 0) == Block::Air)
+                    push_face({ xpos, ypos, zpos }, Direction::XNeg, current_block,
+                              generate_ao_values(chunk, neighbors, Direction::XNeg, coord));
+                if (neighbor_block(0, 1, 0) == Block::Air)
+                    push_face({ xpos, ypos, zpos }, Direction::YPos, current_block,
+                              generate_ao_values(chunk, neighbors, Direction::YPos, coord));
+                if (neighbor_block(0, -1, 0) == Block::Air)
+                    push_face({ xpos, ypos, zpos }, Direction::YNeg, current_block,
+                              generate_ao_values(chunk, neighbors, Direction::YNeg, coord));
+                if (neighbor_block(0, 0, 1) == Block::Air)
+                    push_face({ xpos, ypos, zpos }, Direction::ZPos, current_block,
+                              generate_ao_values(chunk, neighbors, Direction::ZPos, coord));
+                if (neighbor_block(0, 0, -1) == Block::Air)
+                    push_face({ xpos, ypos, zpos }, Direction::ZNeg, current_block,
+                              generate_ao_values(chunk, neighbors, Direction::ZNeg, coord));
             }
         }
     }
@@ -205,8 +210,8 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
     auto verticies_size = static_cast<GLsizei>(packed_vertex_data.size() * sizeof(std::uint32_t));
     auto indicies_size = static_cast<GLsizei>(indicies.size() * sizeof(std::uint32_t));
 
-    glBufferData(GL_ARRAY_BUFFER, verticies_size, packed_vertex_data.data(), GL_DYNAMIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies_size, indicies.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, verticies_size, packed_vertex_data.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies_size, indicies.data(), GL_STATIC_DRAW);
 
     glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(std::uint32_t), nullptr);
     glEnableVertexAttribArray(0);

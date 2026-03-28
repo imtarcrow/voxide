@@ -101,9 +101,11 @@ private:
     GLsizei index_count = 0;
 
     [[nodiscard]] auto pack_vertex_data(VertexData data) const noexcept -> std::uint32_t;
-    auto generate_ao_values(const Chunk& chunk, const World& world, Direction direction, LocalCoord coord) -> std::array<std::uint8_t, 4>;
 
-    auto get_block(const Chunk& chunk, const World& world, LocalCoord coord) -> Block;
+    auto get_block(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, WorldCoord coord) -> Block;
+
+    auto generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, Direction direction, WorldCoord coord)
+        -> std::array<std::uint8_t, 4>;
 
 public:
     ChunkMesh();

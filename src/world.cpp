@@ -1,6 +1,5 @@
 #include "world.hpp"
 
-#include <random>
 #include <spdlog/spdlog.h>
 
 #include "FastNoiseLite.h"
@@ -37,27 +36,27 @@ void World::set_seed(int seed) noexcept
 
 [[nodiscard]] auto World::try_get_block(WorldCoord position) const noexcept -> std::optional<Block>
 {
-    if (!this->is_chunk_loaded(CoordConvert::world_to_chunk(position))) {
+    if (!this->is_chunk_loaded(Coords::world_to_chunk(position))) {
         return std::nullopt;
     }
 
-    const auto& chunk = this->loaded_chunks.at(Chunk::calculate_chunk_key(CoordConvert::world_to_chunk(position)));
-    return chunk->get_block_at(CoordConvert::world_to_local(position));
+    const auto& chunk = this->loaded_chunks.at(Chunk::calculate_chunk_key(Coords::world_to_chunk(position)));
+    return chunk->get_block_at(Coords::world_to_local(position));
 }
 
 auto World::try_set_block(WorldCoord position, Block block) noexcept -> bool
 {
-    if (!this->is_chunk_loaded(CoordConvert::world_to_chunk(position))) {
+    if (!this->is_chunk_loaded(Coords::world_to_chunk(position))) {
         return false;
     }
 
-    auto& chunk = this->loaded_chunks.at(Chunk::calculate_chunk_key(CoordConvert::world_to_chunk(position)));
-    chunk->set_block_at(CoordConvert::world_to_local(position), block);
+    auto& chunk = this->loaded_chunks.at(Chunk::calculate_chunk_key(Coords::world_to_chunk(position)));
+    chunk->set_block_at(Coords::world_to_local(position), block);
 
     return true;
 }
 
-[[nodiscard]] auto World::try_get_chunk(ChunkCoord position) -> Chunk*
+[[nodiscard]] auto World::try_get_chunk(ChunkCoord position) const -> Chunk*
 {
     if (!this->is_chunk_loaded(position)) {
         return nullptr;

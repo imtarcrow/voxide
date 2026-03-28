@@ -39,7 +39,7 @@ public:
     auto try_set_block(WorldCoord position, Block block) noexcept -> bool;
     void set_block_at(WorldCoord position, Block block);
 
-    [[nodiscard]] auto try_get_chunk(ChunkCoord position) -> Chunk*;
+    [[nodiscard]] auto try_get_chunk(ChunkCoord position) const -> Chunk*;
     [[nodiscard]] auto get_chunk(ChunkCoord position) -> Chunk&;
     
     [[nodiscard]] auto get_loaded_chunks() const -> const std::unordered_map<uint64_t, std::unique_ptr<Chunk>>&;
