@@ -85,7 +85,7 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
         for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
             float value = this->noise_generator.GetNoise(static_cast<float>(xpos + (position.x * 16)),
                                                          static_cast<float>(zpos + (position.z * 16)));
-            int height = static_cast<int>(((value + 1.0F) / 2.0F) * 48);
+            int height = static_cast<int>(((value + 1.0F) / 2.0F) * 96);
 
             for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
                 if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height - 1)
@@ -97,7 +97,7 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
     }
 
     std::random_device dev;
-    std::mt19937_64 rng(dev());
+    std::mt19937_64 rng(this->seed + Chunk::calculate_chunk_key(position));
     std::uniform_real_distribution<double> dist(0, 1);
 
     for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {

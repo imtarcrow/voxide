@@ -3,6 +3,7 @@
 in vec2 base_uv;
 flat in uint dir;
 flat in uint tex_id;
+in float ambient_occlusion;
 
 uniform sampler2D texture_atlas;
 
@@ -17,10 +18,11 @@ vec3 dirHints[6] = vec3[6](
         vec3(1, 1, 0) // -Z
     );
 
+
 void main()
 {
     float tiles_per_row = float(textureSize(texture_atlas, 0).x) / 16.0;
-    float tile_uv_size  = 1.0 / tiles_per_row;
+    float tile_uv_size = 1.0 / tiles_per_row;
 
     float col = mod(float(tex_id), tiles_per_row);
     float row = floor(float(tex_id) / tiles_per_row);
@@ -36,5 +38,5 @@ void main()
     vec2 tile_max = tile_origin + tile_uv_size - half_texel;
     uv = clamp(uv, tile_min, tile_max);
 
-    FragColor = texture(texture_atlas, uv);
+    FragColor = texture(texture_atlas, uv) * ambient_occlusion;
 }
