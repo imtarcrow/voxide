@@ -78,14 +78,15 @@ auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_
 {
     std::uint32_t packed = 0;
 
-    packed |= static_cast<std::uint32_t>(data.position.x & 0x1FU) << 27U;
-    packed |= static_cast<std::uint32_t>(data.position.y & 0x1FU) << 22U;
-    packed |= static_cast<std::uint32_t>(data.position.z & 0x1FU) << 17U;
-    packed |= static_cast<std::uint32_t>(data.texture & 0xFFU) << 9U;
-    packed |= static_cast<std::uint32_t>(data.direction & 0x7U) << 6U;
-    packed |= static_cast<std::uint32_t>(data.corner & 0x3U) << 4U;
-    packed |= static_cast<std::uint32_t>(data.ambient_occlusion & 0x3U) << 2U;
+    packed |= static_cast<std::uint32_t>(data.position.x & 0x3FU) << 26U;
+    packed |= static_cast<std::uint32_t>(data.position.y & 0x3FU) << 20U;
+    packed |= static_cast<std::uint32_t>(data.position.z & 0x3FU) << 14U;
 
+    packed |= static_cast<std::uint32_t>(data.texture & 0x7FU) << 7U;
+
+    packed |= static_cast<std::uint32_t>(data.direction & 0x7U) << 4U;
+    packed |= static_cast<std::uint32_t>(data.corner & 0x3U) << 2U;
+    packed |= static_cast<std::uint32_t>(data.ambient_occlusion & 0x3U) << 0U;
     return packed;
 }
 
@@ -174,7 +175,8 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
                     const int neighbor_x = xpos + delta_x;
                     const int neighbor_y = ypos + delta_y;
                     const int neighbor_z = zpos + delta_z;
-                    if (neighbor_x >= 0 && neighbor_x < CHUNK_SIZE_X && neighbor_y >= 0 && neighbor_y < CHUNK_SIZE_Y && neighbor_z >= 0 && neighbor_z < CHUNK_SIZE_Z) {
+                    if (neighbor_x >= 0 && neighbor_x < CHUNK_SIZE_X && neighbor_y >= 0 && neighbor_y < CHUNK_SIZE_Y && neighbor_z >= 0
+                        && neighbor_z < CHUNK_SIZE_Z) {
                         return chunk.get_block_at(LocalCoord::from(neighbor_x, neighbor_y, neighbor_z));
                     }
                     return this->get_block(chunk, neighbors,

@@ -19,21 +19,30 @@ vec2 base_uvs[4] = vec2[4](
     );
 
 float ambient_occlusion_multiplier[4] = float[4](
-        1.0f,
-        0.85f,
-        0.70f,
-        0.50f
+        1.00F,
+        0.75F,
+        0.60F,
+        0.40F
     );
 
 void main() {
-    float x = float((packed_data >> 27u) & 0x1Fu);
-    float y = float((packed_data >> 22u) & 0x1Fu);
-    float z = float((packed_data >> 17u) & 0x1Fu);
+    // float x = float((packed_data >> 27u) & 0x1Fu);
+    // float y = float((packed_data >> 22u) & 0x1Fu);
+    // float z = float((packed_data >> 17u) & 0x1Fu);
+    //
+    // uint texture_id = (packed_data >> 9u) & 0xFFu;
+    // uint direction = (packed_data >> 6u) & 0x7u;
+    // uint corner = (packed_data >> 4u) & 0x3u;
+    // uint ambient_occl = (packed_data >> 2u) & 0x3u;
 
-    uint texture_id = (packed_data >> 9u) & 0xFFu;
-    uint direction = (packed_data >> 6u) & 0x7u;
-    uint corner = (packed_data >> 4u) & 0x3u;
-    uint ambient_occl = (packed_data >> 2u) & 0x3u;
+    float x = float((packed_data >> 26u) & 0x3Fu);
+    float y = float((packed_data >> 20u) & 0x3Fu);
+    float z = float((packed_data >> 14u) & 0x3Fu);
+
+    uint texture_id = (packed_data >> 7u) & 0x7Fu;
+    uint direction = (packed_data >> 4u) & 0x7u;
+    uint corner = (packed_data >> 2u) & 0x3u;
+    uint ambient_occl = (packed_data >> 0u) & 0x3u;
 
     gl_Position = projection * view * model * vec4(x - 0.5, y - 0.5, z - 0.5, 1.0);
 

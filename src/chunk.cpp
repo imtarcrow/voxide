@@ -8,12 +8,6 @@
 #include "block.hpp"
 #include "chunk_mesh.hpp"
 
-Chunk::Chunk(ChunkCoord position)
-    : position(position)
-{
-    this->mesh = std::make_unique<ChunkMesh>();
-}
-
 void Chunk::initialize_block_array()
 {
     if (!this->is_empty()) {
@@ -33,8 +27,9 @@ auto Chunk::get_block_at(LocalCoord position) const noexcept -> Block
     return (*this->blocks)[(position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z];
 }
 
-void Chunk::set_block_at(LocalCoord position, Block block)
+void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
 {
+
     if (this->is_empty() && block == Block::Air) {
         return;
     }
@@ -61,6 +56,10 @@ void Chunk::set_block_at(LocalCoord position, Block block)
             this->blocks = nullptr;
         }
     }
+
+    if (!supress_dirty) {
+        this->dirty = true;
+    }
 }
 
 auto Chunk::get_position() const noexcept -> ChunkCoord
@@ -68,22 +67,22 @@ auto Chunk::get_position() const noexcept -> ChunkCoord
     return this->position;
 }
 
-void Chunk::set_position(ChunkCoord position) noexcept
-{
-    this->position = position;
-}
-
 auto Chunk::calculate_chunk_key(const ChunkCoord& position) noexcept -> uint64_t
 {
+    auto xpos = static_cast<uint64_t>(static_cast<uint32_t>(position.x));
+    auto ypos = static_cast<uint64_t>(static_cast<uint32_t>(position.y));
+    auto zpos = static_cast<uint64_t>(static_cast<uint32_t>(position.z));
+
     uint64_t hash = 0;
 
-    hash ^= static_cast<uint64_t>(position.x) * 2654435761;
-    hash ^= static_cast<uint64_t>(position.y) * 2654435761 << 21U;
-    hash ^= static_cast<uint64_t>(position.z) * 2654435761 << 42U;
+    hash ^= xpos * 0x9E3779B185EBCA87ULL;
+    hash ^= ypos * 0xC2B2AE3D27D4EB4FULL;
+    hash ^= zpos * 0x165667B19E3779F9ULL;
+
     hash ^= (hash >> 30U);
-    hash *= 0xbf58476d1ce4e5b;
+    hash *= 0xbf58476d1ce4e5bULL;
     hash ^= (hash >> 27U);
-    hash *= 0x94d049bb133111eb;
+    hash *= 0x94d049bb133111ebULL;
     hash ^= (hash >> 31U);
 
     return hash;
@@ -97,6 +96,16 @@ auto Chunk::get_chunk_key() const noexcept -> std::uint64_t
 auto Chunk::is_empty() const noexcept -> bool
 {
     return this->blocks == nullptr;
+}
+
+auto Chunk::is_dirty() const noexcept -> bool
+{
+    return this->dirty;
+}
+
+void Chunk::set_dirty(bool dirty) noexcept
+{
+    this->dirty = dirty;
 }
 
 void Chunk::generate_mesh(const World& world)
