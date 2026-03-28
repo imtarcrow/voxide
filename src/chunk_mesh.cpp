@@ -104,9 +104,9 @@ auto ChunkMesh::generate_ao_values(const Chunk& chunk, const World& world, Direc
 
         auto isSolid = [&](Block block) -> bool { return block != Block::Air; };
 
-        int ambient_occlusion = (isSolid(side1) && isSolid(side2))
-            ? 3
-            : ((int)isSolid(side1) + (int)isSolid(side2) + (int)isSolid(diagonal)); ao_out[corner] = ambient_occlusion;
+        int ambient_occlusion
+            = (isSolid(side1) && isSolid(side2)) ? 3 : ((int)isSolid(side1) + (int)isSolid(side2) + (int)isSolid(diagonal));
+        ao_out[corner] = ambient_occlusion;
     }
 
     return ao_out;

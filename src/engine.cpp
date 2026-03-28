@@ -53,7 +53,7 @@ void Engine::init()
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     this->world = std::make_unique<World>();
-    this->world->generate_area(ChunkCoord(0,0,0), 10, 12, 10);
+    this->world->generate_area(ChunkCoord(0, 0, 0), 10, 12, 10);
 
     this->texture_atlas_data = stbi_load("./assets/texture_atlas.png", &this->texture_atlas_width, &this->texture_atlas_height, nullptr, 0);
 
@@ -82,8 +82,6 @@ void Engine::init()
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     this->window->set_capturing_mouse(true);
     this->initialize_imgui();
@@ -236,22 +234,18 @@ void Engine::run()
 
         if (!this->window->is_capturing_mouse()) {
             ImGui::Begin("Settings", nullptr, 0);
-            ImGui::Checkbox("Block", &this->checkbox_is_ticked);
+            ImGui::Checkbox("Wireframe", &this->checkbox_is_ticked);
 
             if (this->checkbox_is_ticked != this->checkbox_was_ticked) {
-                
-                // Chunk& chunk = this->chunks.at(Chunk::calculate_chunk_key(glm::ivec3(0, 3, 0)));
-                //
-                // if (this->checkbox_is_ticked) {
-                //     chunk.set_block_at(glm::ivec3(8,16,8), 2);
-                // }
-                // else {
-                //     chunk.set_block_at(glm::ivec3(8,16,8), 0);
-                // }
-                //
-                // chunk.mesh->generate(chunk);
-                //
-                // this->checkbox_was_ticked = this->checkbox_is_ticked;
+
+                if (this->checkbox_is_ticked) {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                }
+                else {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+
+                this->checkbox_was_ticked = this->checkbox_is_ticked;
             }
 
             ImGui::End();

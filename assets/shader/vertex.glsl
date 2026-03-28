@@ -41,5 +41,4 @@ void main() {
     dir = direction;
     tex_id = texture_id;
     ambient_occlusion = ambient_occlusion_multiplier[ambient_occl];
-
 }
