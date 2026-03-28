@@ -88,26 +88,13 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
             int height = static_cast<int>(((value + 1.0F) / 2.0F) * 96);
 
             for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
+                if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < 40) {
+                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Water);
+                }
                 if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height - 1)
                     iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Stone);
                 else if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height)
                     iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Grass);
-            }
-        }
-    }
-
-    std::random_device dev;
-    std::mt19937_64 rng(this->seed + Chunk::calculate_chunk_key(position));
-    std::uniform_real_distribution<double> dist(0, 1);
-
-    for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
-        for (int ypos = 0; ypos < CHUNK_SIZE_X; ypos++) {
-            for (int zpos = 0; zpos < CHUNK_SIZE_X; zpos++) {
-                if (dist(rng) < 0.999) {
-                    continue;
-                }
-
-                iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Blue);
             }
         }
     }
@@ -117,6 +104,8 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
 
 void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius)
 {
+
+    auto start = std::chrono::high_resolution_clock::now();
     for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
         for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
             for (int ypos = -(y_radius / 2); ypos < (y_radius / 2); ypos++) {
@@ -124,6 +113,12 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
             }
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    spdlog::info("Generating chunks took {}ms", duration.count());
+
+    start = std::chrono::high_resolution_clock::now();
 
     spdlog::info("generating meshes");
     spdlog::info("loaded chunks size: {}", this->loaded_chunks.size());
@@ -140,4 +135,8 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
             }
         }
     }
+
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    spdlog::info("Generating meshes took {}ms", duration.count());
 }
