@@ -45,6 +45,9 @@ private:
     bool checkbox_is_ticked = false;
     bool checkbox_was_ticked = false;
 
+    bool checkbox2_is_ticked = false;
+    bool checkbox2_was_ticked = false;
+
     bool should_quit = false;
 
     void initialize_imgui() noexcept;

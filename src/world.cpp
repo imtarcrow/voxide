@@ -82,12 +82,12 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
 
     for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
         for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
-            float value = this->noise_generator.GetNoise(static_cast<float>(xpos + (position.x * 16)),
-                                                         static_cast<float>(zpos + (position.z * 16)));
-            int height = static_cast<int>(((value + 1.0F) / 2.0F) * 96);
+            float value = this->noise_generator.GetNoise(static_cast<float>(xpos + (position.x * CHUNK_SIZE_X)),
+                                                         static_cast<float>(zpos + (position.z * CHUNK_SIZE_Z)));
+            int height = static_cast<int>(((value + 1.0F) / 2.0F) * 64);
 
             for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
-                if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < 40) {
+                if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < 32) {
                     iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Water);
                 }
                 if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height - 1)
@@ -107,7 +107,7 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
     auto start = std::chrono::high_resolution_clock::now();
     for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
         for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
-            for (int ypos = -(y_radius / 2); ypos < (y_radius / 2); ypos++) {
+            for (int ypos = -1 ;ypos < y_radius; ypos++) {
                 this->generate_chunk(center + ChunkCoord(xpos, ypos, zpos));
             }
         }
@@ -122,18 +122,18 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
     spdlog::info("generating meshes");
     spdlog::info("loaded chunks size: {}", this->loaded_chunks.size());
 
-    for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
-        for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
-            for (int ypos = -(y_radius / 2); ypos < (y_radius / 2); ypos++) {
-                auto* chunk = this->try_get_chunk(ChunkCoord(xpos, ypos, zpos));
-
-                if (chunk == nullptr)
-                    continue;
-
-                chunk->generate_mesh(*this);
-            }
-        }
-    }
+    // for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
+    //     for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
+    //         for (int ypos = -1; ypos < y_radius ; ypos++) {
+    //             auto* chunk = this->try_get_chunk(ChunkCoord(xpos, ypos, zpos));
+    //
+    //             if (chunk == nullptr)
+    //                 continue;
+    //
+    //             chunk->generate_mesh(*this);
+    //         }
+    //     }
+    // }
 
     end = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);

@@ -4,11 +4,11 @@
 #include <cstdint>
 #include <glm/vec3.hpp>
 
-constexpr uint8_t CHUNK_SIZE_X = 16;
-constexpr uint8_t CHUNK_SIZE_Y = 16;
-constexpr uint8_t CHUNK_SIZE_Z = 16;
-constexpr uint16_t CHUNK_SIZE
-    = static_cast<std::uint16_t>(CHUNK_SIZE_X) * static_cast<std::uint16_t>(CHUNK_SIZE_Y) * static_cast<std::uint16_t>(CHUNK_SIZE_Z);
+constexpr uint8_t CHUNK_SIZE_X = 32;
+constexpr uint8_t CHUNK_SIZE_Y = 32;
+constexpr uint8_t CHUNK_SIZE_Z = 32;
+constexpr uint32_t CHUNK_SIZE
+    = static_cast<std::uint32_t>(CHUNK_SIZE_X) * static_cast<std::uint32_t>(CHUNK_SIZE_Y) * static_cast<std::uint32_t>(CHUNK_SIZE_Z);
 
 struct LocalCoord
 {
@@ -39,6 +39,8 @@ struct LocalCoord
 struct ChunkCoord
 {
     int32_t x, y, z;
+
+
 
     [[nodiscard]] auto operator+(const ChunkCoord& other) const noexcept -> ChunkCoord
     {

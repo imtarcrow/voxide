@@ -18,6 +18,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
+#include "chunk.hpp"
 #include "glad/glad.h"
 #include "shader_program.hpp"
 
@@ -53,7 +54,7 @@ void Engine::init()
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     this->world = std::make_unique<World>();
-    this->world->generate_area(ChunkCoord(0, 0, 0), 30, 12, 30);
+    this->world->generate_area(ChunkCoord(0, 0, 0), 10, 5, 10);
 
     this->texture_atlas_data = stbi_load("./assets/texture_atlas.png", &this->texture_atlas_width, &this->texture_atlas_height, nullptr, 0);
 
@@ -248,6 +249,27 @@ void Engine::run()
                 this->checkbox_was_ticked = this->checkbox_is_ticked;
             }
 
+            ImGui::Checkbox("Block", &this->checkbox2_is_ticked);
+            if (this->checkbox2_is_ticked != this->checkbox2_was_ticked) {
+                Chunk* chunk = this->world->try_get_chunk(ChunkCoord { .x = 0, .y = 3, .z = 0 });
+                if (this->checkbox2_is_ticked) {
+                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::Stone);
+                }
+                else {
+                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::Air);
+                }
+                this->checkbox2_was_ticked = this->checkbox2_is_ticked;
+            }
+            bool value = ImGui::Button("Reload Shaders");
+            if (value) {
+                this->program->reload();
+            }
+
+            value = ImGui::Button("Is dirty?");
+            if (value) {
+                Chunk* chunk = this->world->try_get_chunk(ChunkCoord { .x = 0, .y = 3, .z = 0 });
+                spdlog::info("Is dirty: {}", chunk->is_dirty());
+            }
             ImGui::End();
         }
 
@@ -266,6 +288,13 @@ void Engine::run()
                                    { position.x * static_cast<int>(CHUNK_SIZE_X), position.y * static_cast<int>(CHUNK_SIZE_Y),
                                      position.z * static_cast<int>(CHUNK_SIZE_Z) });
             program->set_uniform("model", model);
+
+            if (chunk->is_dirty()) {
+                ChunkCoord pos = chunk->get_position();
+                spdlog::info("Regenerating chunk mesh at: {}, {}, {}", pos.x, pos.y, pos.z);
+                chunk->generate_mesh(*this->world);
+                chunk->set_dirty(false);
+            }
 
             chunk->render();
         }

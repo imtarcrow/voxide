@@ -17,14 +17,17 @@ private:
     ChunkCoord position;
 
     std::unique_ptr<std::array<Block, CHUNK_SIZE>> blocks = nullptr;
-    uint16_t air_block_count = CHUNK_SIZE;
+    uint32_t air_block_count = CHUNK_SIZE;
 
-    std::unique_ptr<ChunkMesh> mesh;
+    std::unique_ptr<ChunkMesh> mesh = std::make_unique<ChunkMesh>();
 
     void initialize_block_array();
 
+    bool dirty = true;
+
 public:
-    Chunk(ChunkCoord position);
+    Chunk(ChunkCoord position)
+        : position(position) { };
     ~Chunk() = default;
 
     // disable copying
@@ -35,15 +38,17 @@ public:
     Chunk(Chunk&&) noexcept = default;
     auto operator=(Chunk&&) noexcept -> Chunk& = default;
 
-    static auto calculate_chunk_key(const ChunkCoord& position) noexcept -> std::uint64_t;
-
     [[nodiscard]] auto get_block_at(LocalCoord position) const noexcept -> Block;
-    void set_block_at(LocalCoord position, Block block);
+    void set_block_at(LocalCoord position, Block block, bool supress_dirty = false);
 
     [[nodiscard]] auto get_position() const noexcept -> ChunkCoord;
-    void set_position(ChunkCoord position) noexcept;
 
+    static auto calculate_chunk_key(const ChunkCoord& position) noexcept -> std::uint64_t;
     [[nodiscard]] auto get_chunk_key() const noexcept -> std::uint64_t;
+
+    [[nodiscard]] auto is_dirty() const noexcept -> bool;
+    void set_dirty(bool dirty) noexcept;
+
     [[nodiscard]] auto is_empty() const noexcept -> bool;
 
     void generate_mesh(const World& world);
