@@ -1,21 +1,77 @@
 #pragma once
+#include <array>
+
+#include "block.hpp"
+#include "coordinates.hpp"
 #ifndef VOXIDE_CHUNK_MESH_HEADER
 #define VOXIDE_CHUNK_MESH_HEADER
 
 #include <glm/glm.hpp>
+
 #include "glad/glad.h"
 
 class Chunk;
 class World;
 
-constexpr std::array<std::array<glm::uvec3, 4>, 6> corner_positions = {{
-    {glm::uvec3( 1, 1, 1 ), glm::uvec3( 1, 0, 1 ), glm::uvec3( 1, 0, 0 ), glm::uvec3( 1, 1, 0 )}, //X+
-    {glm::uvec3( 0, 1, 0 ), glm::uvec3( 0, 0, 0 ), glm::uvec3( 0, 0, 1 ), glm::uvec3( 0, 1, 1 )}, //X-
-    {glm::uvec3( 0, 1, 1 ), glm::uvec3( 1, 1, 1 ), glm::uvec3( 1, 1, 0 ), glm::uvec3( 0, 1, 0 )}, //Y+
-    {glm::uvec3( 1, 0, 1 ), glm::uvec3( 0, 0, 1 ), glm::uvec3( 0, 0, 0 ), glm::uvec3( 1, 0, 0 )}, //Y-
-    {glm::uvec3( 0, 1, 1 ), glm::uvec3( 0, 0, 1 ), glm::uvec3( 1, 0, 1 ), glm::uvec3( 1, 1, 1 )}, //Z+
-    {glm::uvec3( 1, 1, 0 ), glm::uvec3( 1, 0, 0 ), glm::uvec3( 0, 0, 0 ), glm::uvec3( 0, 1, 0 )}, //Z-
-}};
+constexpr std::array<std::array<glm::uvec3, 4>, 6> corner_positions = { {
+    { glm::uvec3(1, 1, 1), glm::uvec3(1, 0, 1), glm::uvec3(1, 0, 0), glm::uvec3(1, 1, 0) }, // X+
+    { glm::uvec3(0, 1, 0), glm::uvec3(0, 0, 0), glm::uvec3(0, 0, 1), glm::uvec3(0, 1, 1) }, // X-
+    { glm::uvec3(0, 1, 1), glm::uvec3(1, 1, 1), glm::uvec3(1, 1, 0), glm::uvec3(0, 1, 0) }, // Y+
+    { glm::uvec3(1, 0, 1), glm::uvec3(0, 0, 1), glm::uvec3(0, 0, 0), glm::uvec3(1, 0, 0) }, // Y-
+    { glm::uvec3(0, 1, 1), glm::uvec3(0, 0, 1), glm::uvec3(1, 0, 1), glm::uvec3(1, 1, 1) }, // Z+
+    { glm::uvec3(1, 1, 0), glm::uvec3(1, 0, 0), glm::uvec3(0, 0, 0), glm::uvec3(0, 1, 0) }, // Z-
+} };
+
+constexpr std::array<std::array<std::array<glm::ivec3, 3>, 4>, 6> ao_lookup = { {
+    // Face 0: X+ (normal +X), tangents: Y and Z
+    // corners: (1,1,1), (1,0,1), (1,0,0), (1,1,0)
+    { {
+        { { glm::ivec3(1, 1, 0), glm::ivec3(1, 0, 1), glm::ivec3(1, 1, 1) } }, // (1,1,1): +Y, +Z
+        { { glm::ivec3(1, -1, 0), glm::ivec3(1, 0, 1), glm::ivec3(1, -1, 1) } }, // (1,0,1): -Y, +Z
+        { { glm::ivec3(1, -1, 0), glm::ivec3(1, 0, -1), glm::ivec3(1, -1, -1) } }, // (1,0,0): -Y, -Z
+        { { glm::ivec3(1, 1, 0), glm::ivec3(1, 0, -1), glm::ivec3(1, 1, -1) } }, // (1,1,0): +Y, -Z
+    } },
+    // Face 1: X- (normal -X), tangents: Y and Z
+    // corners: (0,1,0), (0,0,0), (0,0,1), (0,1,1)
+    { {
+        { { glm::ivec3(-1, 1, 0), glm::ivec3(-1, 0, -1), glm::ivec3(-1, 1, -1) } }, // (0,1,0): +Y, -Z
+        { { glm::ivec3(-1, -1, 0), glm::ivec3(-1, 0, -1), glm::ivec3(-1, -1, -1) } }, // (0,0,0): -Y, -Z
+        { { glm::ivec3(-1, -1, 0), glm::ivec3(-1, 0, 1), glm::ivec3(-1, -1, 1) } }, // (0,0,1): -Y, +Z
+        { { glm::ivec3(-1, 1, 0), glm::ivec3(-1, 0, 1), glm::ivec3(-1, 1, 1) } }, // (0,1,1): +Y, +Z
+    } },
+    // Face 2: Y+ (normal +Y), tangents: X and Z
+    // corners: (0,1,1), (1,1,1), (1,1,0), (0,1,0)
+    { {
+        { { glm::ivec3(-1, 1, 0), glm::ivec3(0, 1, 1), glm::ivec3(-1, 1, 1) } }, // (0,1,1): -X, +Z
+        { { glm::ivec3(1, 1, 0), glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1) } }, // (1,1,1): +X, +Z
+        { { glm::ivec3(1, 1, 0), glm::ivec3(0, 1, -1), glm::ivec3(1, 1, -1) } }, // (1,1,0): +X, -Z
+        { { glm::ivec3(-1, 1, 0), glm::ivec3(0, 1, -1), glm::ivec3(-1, 1, -1) } }, // (0,1,0): -X, -Z
+    } },
+    // Face 3: Y- (normal -Y), tangents: X and Z
+    // corners: (1,0,1), (0,0,1), (0,0,0), (1,0,0)
+    { {
+        { { glm::ivec3(1, -1, 0), glm::ivec3(0, -1, 1), glm::ivec3(1, -1, 1) } }, // (1,0,1): +X, +Z
+        { { glm::ivec3(-1, -1, 0), glm::ivec3(0, -1, 1), glm::ivec3(-1, -1, 1) } }, // (0,0,1): -X, +Z
+        { { glm::ivec3(-1, -1, 0), glm::ivec3(0, -1, -1), glm::ivec3(-1, -1, -1) } }, // (0,0,0): -X, -Z
+        { { glm::ivec3(1, -1, 0), glm::ivec3(0, -1, -1), glm::ivec3(1, -1, -1) } }, // (1,0,0): +X, -Z
+    } },
+    // Face 4: Z+ (normal +Z), tangents: X and Y
+    // corners: (0,1,1), (0,0,1), (1,0,1), (1,1,1)
+    { {
+        { { glm::ivec3(-1, 0, 1), glm::ivec3(0, 1, 1), glm::ivec3(-1, 1, 1) } }, // (0,1,1): -X, +Y
+        { { glm::ivec3(-1, 0, 1), glm::ivec3(0, -1, 1), glm::ivec3(-1, -1, 1) } }, // (0,0,1): -X, -Y
+        { { glm::ivec3(1, 0, 1), glm::ivec3(0, -1, 1), glm::ivec3(1, -1, 1) } }, // (1,0,1): +X, -Y
+        { { glm::ivec3(1, 0, 1), glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1) } }, // (1,1,1): +X, +Y
+    } },
+    // Face 5: Z- (normal -Z), tangents: X and Y
+    // corners: (1,1,0), (1,0,0), (0,0,0), (0,1,0)
+    { {
+        { { glm::ivec3(1, 0, -1), glm::ivec3(0, 1, -1), glm::ivec3(1, 1, -1) } }, // (1,1,0): +X, +Y
+        { { glm::ivec3(1, 0, -1), glm::ivec3(0, -1, -1), glm::ivec3(1, -1, -1) } }, // (1,0,0): +X, -Y
+        { { glm::ivec3(-1, 0, -1), glm::ivec3(0, -1, -1), glm::ivec3(-1, -1, -1) } }, // (0,0,0): -X, -Y
+        { { glm::ivec3(-1, 0, -1), glm::ivec3(0, 1, -1), glm::ivec3(-1, 1, -1) } }, // (0,1,0): -X, +Y
+    } },
+} };
 
 enum Direction : std::uint8_t {
     XPos = 0,
@@ -25,7 +81,6 @@ enum Direction : std::uint8_t {
     ZPos = 4,
     ZNeg = 5,
 };
-
 
 using VertexData = struct VertexData
 {
@@ -46,6 +101,9 @@ private:
     GLsizei index_count = 0;
 
     [[nodiscard]] auto pack_vertex_data(VertexData data) const noexcept -> std::uint32_t;
+    auto generate_ao_values(const Chunk& chunk, const World& world, Direction direction, LocalCoord coord) -> std::array<std::uint8_t, 4>;
+
+    auto get_block(const Chunk& chunk, const World& world, LocalCoord coord) -> Block;
 
 public:
     ChunkMesh();
