@@ -37,10 +37,10 @@ private:
     float total_time_passed = 0.0F;
     float time_since_last_log = 0.0F;
 
-    int texture_atlas_width;
-    int texture_atlas_height;
-    unsigned char* texture_atlas_data;
-    GLuint texture_atlas_handle;
+    int texture_atlas_width = 0;
+    int texture_atlas_height = 0;
+    unsigned char* texture_atlas_data = nullptr;
+    GLuint texture_atlas_handle = 0;
 
     bool checkbox_is_ticked = false;
     bool checkbox_was_ticked = false;

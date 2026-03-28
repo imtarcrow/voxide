@@ -5,6 +5,7 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 
+#include "block.hpp"
 #include "chunk_mesh.hpp"
 
 Chunk::Chunk(ChunkCoord position)
@@ -13,24 +14,53 @@ Chunk::Chunk(ChunkCoord position)
     this->mesh = std::make_unique<ChunkMesh>();
 }
 
-auto Chunk::is_inside_chunk(LocalCoord position) noexcept -> bool
+void Chunk::initialize_block_array()
 {
-    return position.x >= 0 && position.x < static_cast<int>(CHUNK_SIZE_X) && position.y >= 0 && position.y < static_cast<int>(CHUNK_SIZE_Y)
-        && position.z >= 0 && position.z < static_cast<int>(CHUNK_SIZE_Z);
-}
-
-auto Chunk::get_block_at(LocalCoord position) const noexcept -> std::optional<Block>
-{
-    if (!Chunk::is_inside_chunk(position)) {
-        return std::nullopt;
+    if (!this->is_empty()) {
+        return;
     }
 
-    return this->blocks[(position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z];
+    this->blocks = std::make_unique<std::array<Block, CHUNK_SIZE>>();
+    this->blocks->fill(Block::Air);
 }
 
-void Chunk::set_block_at(LocalCoord position, Block block) noexcept
+auto Chunk::get_block_at(LocalCoord position) const noexcept -> Block
 {
-    this->blocks[(position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z] = block;
+    if (this->is_empty()) {
+        return Block::Air;
+    }
+
+    return (*this->blocks)[(position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z];
+}
+
+void Chunk::set_block_at(LocalCoord position, Block block)
+{
+    if (this->is_empty() && block == Block::Air) {
+        return;
+    }
+
+    if (this->is_empty()) {
+        this->initialize_block_array();
+    }
+
+    const uint16_t index = (position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z;
+    Block current_block = (*this->blocks)[index];
+
+    if (current_block != block) {
+        (*this->blocks)[index] = block;
+
+        if (current_block == Block::Air && block != Block::Air) {
+            this->air_block_count--;
+        }
+        else if (current_block != Block::Air && block == Block::Air) {
+            this->air_block_count++;
+        }
+
+        // delete chunk array if chunk is completly made of air
+        if (air_block_count == CHUNK_SIZE) {
+            this->blocks = nullptr;
+        }
+    }
 }
 
 auto Chunk::get_position() const noexcept -> ChunkCoord
@@ -62,6 +92,11 @@ auto Chunk::calculate_chunk_key(const ChunkCoord& position) noexcept -> uint64_t
 auto Chunk::get_chunk_key() const noexcept -> std::uint64_t
 {
     return Chunk::calculate_chunk_key(this->position);
+}
+
+auto Chunk::is_empty() const noexcept -> bool
+{
+    return this->blocks == nullptr;
 }
 
 void Chunk::generate_mesh(const World& world)

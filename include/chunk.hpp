@@ -5,25 +5,23 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include <memory>
-#include <optional>
 
 #include "block.hpp"
 #include "chunk_mesh.hpp"
 #include "coordinates.hpp"
 
-constexpr std::uint8_t CHUNK_SIZE_X = 16;
-constexpr std::uint8_t CHUNK_SIZE_Y = 16;
-constexpr std::uint8_t CHUNK_SIZE_Z = 16;
-constexpr std::uint16_t CHUNK_SIZE = CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z;
-
 class Chunk
 {
 
 private:
-    std::array<Block, CHUNK_SIZE> blocks = { Block::Air };
-
     ChunkCoord position;
+
+    std::unique_ptr<std::array<Block, CHUNK_SIZE>> blocks = nullptr;
+    uint16_t air_block_count = CHUNK_SIZE;
+
     std::unique_ptr<ChunkMesh> mesh;
+
+    void initialize_block_array();
 
 public:
     Chunk(ChunkCoord position);
@@ -39,14 +37,14 @@ public:
 
     static auto calculate_chunk_key(const ChunkCoord& position) noexcept -> std::uint64_t;
 
-    [[nodiscard]] auto get_block_at(LocalCoord position) const noexcept -> std::optional<Block>;
-    void set_block_at(LocalCoord position, Block block) noexcept;
+    [[nodiscard]] auto get_block_at(LocalCoord position) const noexcept -> Block;
+    void set_block_at(LocalCoord position, Block block);
 
     [[nodiscard]] auto get_position() const noexcept -> ChunkCoord;
     void set_position(ChunkCoord position) noexcept;
 
     [[nodiscard]] auto get_chunk_key() const noexcept -> std::uint64_t;
-    [[nodiscard]] static auto is_inside_chunk(LocalCoord position) noexcept -> bool;
+    [[nodiscard]] auto is_empty() const noexcept -> bool;
 
     void generate_mesh(const World& world);
     void render() const noexcept;

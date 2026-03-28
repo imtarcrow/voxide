@@ -53,7 +53,7 @@ void Engine::init()
                                             static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
 
     this->world = std::make_unique<World>();
-    this->world->generate_area(ChunkCoord(0, 0, 0), 10, 12, 10);
+    this->world->generate_area(ChunkCoord(0, 0, 0), 30, 12, 30);
 
     this->texture_atlas_data = stbi_load("./assets/texture_atlas.png", &this->texture_atlas_width, &this->texture_atlas_height, nullptr, 0);
 
