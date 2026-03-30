@@ -93,12 +93,12 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
 
             for (int ypos = 0; ypos < CHUNK_SIZE_Y; ypos++) {
                 if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < 32) {
-                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Water);
+                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::WATER);
                 }
                 if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height - 1)
-                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Stone);
+                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::STONE);
                 else if (ypos + (position.y * static_cast<int>(CHUNK_SIZE_Y)) < height)
-                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::Grass);
+                    iterator->second->set_block_at(LocalCoord(xpos, ypos, zpos), Block::GRASS);
             }
         }
     }

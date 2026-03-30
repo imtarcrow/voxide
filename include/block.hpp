@@ -3,9 +3,9 @@
 #include <cstdint>
 
 enum class Block : std::uint8_t {
-    Air = 0,
-    Grass = 1,
-    Stone = 2,
-    Water = 3,
+    AIR = 0,
+    GRASS = 1,
+    STONE = 2,
+    WATER = 3,
 };
 

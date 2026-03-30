@@ -103,7 +103,7 @@ auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 26>& neig
         }
     }
 
-    return Block::Air;
+    return Block::AIR;
 }
 auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, Direction direction, WorldCoord coord)
     -> std::array<std::uint8_t, 4>
@@ -122,7 +122,7 @@ auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 
         const Block side2 = sample_offset(samples[1]);
         const Block diagonal = sample_offset(samples[2]);
 
-        const auto is_solid = [](Block block) { return block != Block::Air; };
+        const auto is_solid = [](Block block) { return block != Block::AIR; };
 
         ao_out[corner]
             = (is_solid(side1) && is_solid(side2)) ? 3 : static_cast<uint8_t>(is_solid(side1) + is_solid(side2) + is_solid(diagonal));
@@ -184,7 +184,7 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
             for (std::uint8_t zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
 
                 const Block current_block = chunk.get_block_at(LocalCoord::from(xpos, ypos, zpos));
-                if (current_block == Block::Air)
+                if (current_block == Block::AIR)
                     continue;
 
                 const WorldCoord coord = { .x = chunk_origin.x + xpos, .y = chunk_origin.y + ypos, .z = chunk_origin.z + zpos };
@@ -201,22 +201,22 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
                                            WorldCoord { .x = coord.x + delta_x, .y = coord.y + delta_y, .z = coord.z + delta_z });
                 };
 
-                if (neighbor_block(1, 0, 0) == Block::Air)
+                if (neighbor_block(1, 0, 0) == Block::AIR)
                     push_face({ xpos, ypos, zpos }, Direction::XPos, current_block,
                               generate_ao_values(chunk, neighbors, Direction::XPos, coord));
-                if (neighbor_block(-1, 0, 0) == Block::Air)
+                if (neighbor_block(-1, 0, 0) == Block::AIR)
                     push_face({ xpos, ypos, zpos }, Direction::XNeg, current_block,
                               generate_ao_values(chunk, neighbors, Direction::XNeg, coord));
-                if (neighbor_block(0, 1, 0) == Block::Air)
+                if (neighbor_block(0, 1, 0) == Block::AIR)
                     push_face({ xpos, ypos, zpos }, Direction::YPos, current_block,
                               generate_ao_values(chunk, neighbors, Direction::YPos, coord));
-                if (neighbor_block(0, -1, 0) == Block::Air)
+                if (neighbor_block(0, -1, 0) == Block::AIR)
                     push_face({ xpos, ypos, zpos }, Direction::YNeg, current_block,
                               generate_ao_values(chunk, neighbors, Direction::YNeg, coord));
-                if (neighbor_block(0, 0, 1) == Block::Air)
+                if (neighbor_block(0, 0, 1) == Block::AIR)
                     push_face({ xpos, ypos, zpos }, Direction::ZPos, current_block,
                               generate_ao_values(chunk, neighbors, Direction::ZPos, coord));
-                if (neighbor_block(0, 0, -1) == Block::Air)
+                if (neighbor_block(0, 0, -1) == Block::AIR)
                     push_face({ xpos, ypos, zpos }, Direction::ZNeg, current_block,
                               generate_ao_values(chunk, neighbors, Direction::ZNeg, coord));
             }

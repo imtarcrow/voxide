@@ -15,13 +15,13 @@ void Chunk::initialize_block_array()
     }
 
     this->blocks = std::make_unique<std::array<Block, CHUNK_SIZE>>();
-    this->blocks->fill(Block::Air);
+    this->blocks->fill(Block::AIR);
 }
 
 auto Chunk::get_block_at(LocalCoord position) const noexcept -> Block
 {
     if (this->is_empty()) {
-        return Block::Air;
+        return Block::AIR;
     }
 
     return (*this->blocks)[(position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z];
@@ -30,7 +30,7 @@ auto Chunk::get_block_at(LocalCoord position) const noexcept -> Block
 void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
 {
 
-    if (this->is_empty() && block == Block::Air) {
+    if (this->is_empty() && block == Block::AIR) {
         return;
     }
 
@@ -44,10 +44,10 @@ void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
     if (current_block != block) {
         (*this->blocks)[index] = block;
 
-        if (current_block == Block::Air && block != Block::Air) {
+        if (current_block == Block::AIR && block != Block::AIR) {
             this->air_block_count--;
         }
-        else if (current_block != Block::Air && block == Block::Air) {
+        else if (current_block != Block::AIR && block == Block::AIR) {
             this->air_block_count++;
         }
 
