@@ -1,14 +1,10 @@
 #pragma once
-#ifndef VOXIDE_GAME_HEADER
-#define VOXIDE_GAME_HEADER
 
 #include <memory>
 #include <stb_image.h>
-#include <unordered_map>
 #include <vector>
 
 #include "camera.hpp"
-#include "chunk.hpp"
 #include "shader_program.hpp"
 #include "window.hpp"
 #include "world.hpp"
@@ -77,4 +73,3 @@ public:
     void init();
 };
 
-#endif // !VOXIDE_GAME_HEADER

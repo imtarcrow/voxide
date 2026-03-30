@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VOXIDE_WINDOW_HEADER
-#define VOXIDE_WINDOW_HEADER
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_video.h>
@@ -72,4 +70,3 @@ public:
     [[nodiscard]] auto get_vsync_mode() const noexcept -> int;
 };
 
-#endif // !VOXIDE_WINDOW_HEADER

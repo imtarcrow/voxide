@@ -1,5 +1,4 @@
 #pragma once
-#ifndef VOXIDE_SHADER_PROGRAM_HEADER
 
 #include <glm/glm.hpp>
 #include <optional>
@@ -37,4 +36,3 @@ public:
     void set_uniform(const std::string& name, glm::mat4 value) const;
 };
 
-#endif // !VOXIDE_SHADER_PROGRAM_HEADER

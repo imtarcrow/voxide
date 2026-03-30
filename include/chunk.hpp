@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VOXIDE_CHUNK_HEADER
-#define VOXIDE_CHUNK_HEADER
 
 #include <cstdint>
 #include <glm/glm.hpp>
@@ -55,4 +53,3 @@ public:
     void render() const noexcept;
 };
 
-#endif // VOXIDE_CHUNK_HEADER
