@@ -1,7 +1,7 @@
 #pragma once
 
-#include <FastNoiseLite.h>
 #include <cstdint>
+#include <noise/FastNoiseLite.h>
 #include <optional>
 #include <unordered_map>
 
@@ -11,7 +11,7 @@
 class World
 {
 private:
-    int seed = 1337;
+    int seed = 0;
     FastNoiseLite noise_generator;
 
     std::unordered_map<std::uint64_t, std::unique_ptr<Chunk>> loaded_chunks;
@@ -36,8 +36,7 @@ public:
     auto try_set_block(WorldCoord position, Block block) noexcept -> bool;
     // void set_block_at(WorldCoord position, Block block);
 
-    [[nodiscard]] auto try_get_chunk(ChunkCoord position) const -> const Chunk*;
-    [[nodiscard]] auto try_get_chunk(ChunkCoord position) -> Chunk*;
+    [[nodiscard]] auto try_get_chunk(ChunkCoord position) const -> Chunk*;
     // [[nodiscard]] auto get_chunk(ChunkCoord position) -> Chunk&;
 
     [[nodiscard]] auto get_loaded_chunks() const -> const std::unordered_map<uint64_t, std::unique_ptr<Chunk>>&;
@@ -48,4 +47,3 @@ public:
     auto generate_chunk(ChunkCoord position) -> Chunk&;
     void generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius);
 };
-

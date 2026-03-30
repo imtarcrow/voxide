@@ -1,6 +1,7 @@
 #include "chunk.hpp"
 
-#include <FastNoiseLite.h>
+#include <cstdint>
+#include <noise/FastNoiseLite.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <memory>
 #include <spdlog/spdlog.h>
@@ -24,12 +25,11 @@ auto Chunk::get_block_at(LocalCoord position) const noexcept -> Block
         return Block::AIR;
     }
 
-    return (*this->blocks)[(position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z];
+    return (*this->blocks)[position.to_index()];
 }
 
 void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
 {
-
     if (this->is_empty() && block == Block::AIR) {
         return;
     }
@@ -38,7 +38,7 @@ void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
         this->initialize_block_array();
     }
 
-    const uint16_t index = (position.x * CHUNK_SIZE_Y * CHUNK_SIZE_Z) + (position.y * CHUNK_SIZE_Z) + position.z;
+    const std::uint16_t index = position.to_index();
     Block current_block = (*this->blocks)[index];
 
     if (current_block != block) {

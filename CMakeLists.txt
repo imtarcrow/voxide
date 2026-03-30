@@ -27,7 +27,7 @@ set(SOURCES
     src/world.cpp
     src/stb_image.cpp
     
-    src/glad.c
+    src/glad/glad.c
 
     src/imgui/imgui.cpp
     src/imgui/imgui_demo.cpp
