@@ -117,7 +117,6 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
 
 void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius)
 {
-    auto start = std::chrono::high_resolution_clock::now();
     for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
         for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
             for (int ypos = -1; ypos < y_radius; ypos++) {
@@ -125,10 +124,4 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
             }
         }
     }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    spdlog::info("Generating chunks took {}ms", duration.count());
-
-    start = std::chrono::high_resolution_clock::now();
 }
