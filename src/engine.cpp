@@ -253,10 +253,10 @@ void Engine::run()
             if (this->checkbox2_is_ticked != this->checkbox2_was_ticked) {
                 Chunk* chunk = this->world->try_get_chunk(ChunkCoord { .x = 0, .y = 3, .z = 0 });
                 if (this->checkbox2_is_ticked) {
-                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::Stone);
+                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::STONE);
                 }
                 else {
-                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::Air);
+                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::AIR);
                 }
                 this->checkbox2_was_ticked = this->checkbox2_is_ticked;
             }
