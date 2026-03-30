@@ -1,7 +1,5 @@
 #pragma once
 #include "world.hpp"
-#ifndef VOXIDE_WORLD_RENDERER_HEADER
-#define VOXIDE_WORLD_RENDERER_HEADER
 
 class WorldRenderer
 {
@@ -15,4 +13,3 @@ public:
     WorldRenderer(World& world);
 };
 
-#endif // !VOXIDE_WORLD_RENDERER_HEADER

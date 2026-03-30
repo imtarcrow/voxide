@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VOXIDE_BLOCK_HEADER
-#define VOXIDE_BLOCK_HEADER
 
 #include <cstdint>
 
@@ -11,4 +9,3 @@ enum class Block : std::uint8_t {
     Water = 3,
 };
 
-#endif // VOXIDE_BLOCK_HEADER

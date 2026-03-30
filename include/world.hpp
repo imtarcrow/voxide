@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VOXIDE_WORLD_HEADER
-#define VOXIDE_WORLD_HEADER
 
 #include <FastNoiseLite.h>
 #include <cstdint>
@@ -18,7 +16,7 @@ private:
 
     std::unordered_map<std::uint64_t, std::unique_ptr<Chunk>> loaded_chunks;
 
-    auto is_chunk_loaded(ChunkCoord position) const noexcept -> bool;
+    [[nodiscard]] auto is_chunk_loaded(ChunkCoord position) const noexcept -> bool;
 
 public:
     World();
@@ -51,4 +49,3 @@ public:
     void generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius);
 };
 
-#endif // VOXIDE_WORLD_HEADER

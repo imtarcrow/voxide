@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VOXIDE_CAMERA_HEADER
-#define VOXIDE_CAMERA_HEADER
 
 #include <glm/glm.hpp>
 
@@ -73,4 +71,3 @@ public:
     [[nodiscard]] auto get_projection_matrix() const noexcept -> glm::mat4;
 };
 
-#endif // !VOXIDE_CAMERA_HEADER

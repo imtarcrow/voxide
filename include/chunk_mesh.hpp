@@ -3,8 +3,6 @@
 
 #include "block.hpp"
 #include "coordinates.hpp"
-#ifndef VOXIDE_CHUNK_MESH_HEADER
-#define VOXIDE_CHUNK_MESH_HEADER
 
 #include <glm/glm.hpp>
 
@@ -123,4 +121,3 @@ public:
     void render() const noexcept;
 };
 
-#endif // VOXIDE_CHUNK_MESH_HEADER
