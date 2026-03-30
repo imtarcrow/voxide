@@ -102,9 +102,9 @@ private:
 
     [[nodiscard]] auto pack_vertex_data(VertexData data) const noexcept -> std::uint32_t;
 
-    auto get_block(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, WorldCoord coord) -> Block;
+    auto get_block(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, WorldCoord coord) -> Block;
 
-    auto generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, Direction direction, WorldCoord coord)
+    auto generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, Direction direction, WorldCoord coord)
         -> std::array<std::uint8_t, 4>;
 
 public:

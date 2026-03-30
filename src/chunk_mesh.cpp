@@ -90,7 +90,7 @@ auto ChunkMesh::pack_vertex_data(VertexData data) const noexcept -> std::uint32_
     return packed;
 }
 
-auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, WorldCoord coord) -> Block
+auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, WorldCoord coord) -> Block
 {
     auto chunk_coord = Coords::world_to_chunk(coord);
     if (chunk_coord == chunk.get_position()) {
@@ -105,10 +105,10 @@ auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 6>& neigh
 
     return Block::Air;
 }
-auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 6>& neighbors, Direction direction, WorldCoord coord)
+auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, Direction direction, WorldCoord coord)
     -> std::array<std::uint8_t, 4>
 {
-    std::array<std::uint8_t, 4> ao_out {};
+    std::array<std::uint8_t, 4> ao_out { };
 
     for (int corner = 0; corner < 4; corner++) {
         const auto& samples = ao_lookup[direction][corner];
@@ -141,24 +141,42 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
     auto push_face = [&](glm::uvec3 pos, Direction direction, Block block, std::array<std::uint8_t, 4> ambient_occlusion) -> void {
         GLuint base = packed_vertex_data.size();
         indicies.insert(indicies.end(), { base + 0, base + 1, base + 2, base + 0, base + 2, base + 3 });
-        packed_vertex_data.push_back(this->pack_vertex_data(
-            { pos + corner_positions[direction][0], static_cast<std::uint8_t>(block), direction, 0, ambient_occlusion[0] }));
-        packed_vertex_data.push_back(this->pack_vertex_data(
-            { pos + corner_positions[direction][1], static_cast<std::uint8_t>(block), direction, 1, ambient_occlusion[1] }));
-        packed_vertex_data.push_back(this->pack_vertex_data(
-            { pos + corner_positions[direction][2], static_cast<std::uint8_t>(block), direction, 2, ambient_occlusion[2] }));
-        packed_vertex_data.push_back(this->pack_vertex_data(
-            { pos + corner_positions[direction][3], static_cast<std::uint8_t>(block), direction, 3, ambient_occlusion[3] }));
+        packed_vertex_data.push_back(this->pack_vertex_data({ .position = pos + corner_positions[direction][0],
+                                                              .texture = static_cast<std::uint8_t>(block),
+                                                              .direction = direction,
+                                                              .corner = 0,
+                                                              .ambient_occlusion = ambient_occlusion[0] }));
+        packed_vertex_data.push_back(this->pack_vertex_data({ .position = pos + corner_positions[direction][1],
+                                                              .texture = static_cast<std::uint8_t>(block),
+                                                              .direction = direction,
+                                                              .corner = 1,
+                                                              .ambient_occlusion = ambient_occlusion[1] }));
+        packed_vertex_data.push_back(this->pack_vertex_data({ .position = pos + corner_positions[direction][2],
+                                                              .texture = static_cast<std::uint8_t>(block),
+                                                              .direction = direction,
+                                                              .corner = 2,
+                                                              .ambient_occlusion = ambient_occlusion[2] }));
+        packed_vertex_data.push_back(this->pack_vertex_data({ .position = pos + corner_positions[direction][3],
+                                                              .texture = static_cast<std::uint8_t>(block),
+                                                              .direction = direction,
+                                                              .corner = 3,
+                                                              .ambient_occlusion = ambient_occlusion[3] }));
     };
 
-    std::array<Chunk*, 6> neighbors = {
-        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 1, .y = 0, .z = 0 }), // X+
-        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = -1, .y = 0, .z = 0 }), // X-
-        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = 1, .z = 0 }), // Y+
-        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = -1, .z = 0 }), // Y-
-        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = 0, .z = 1 }), // Z+
-        world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = 0, .y = 0, .z = -1 }), // Z-
-    };
+    std::array<Chunk*, 26> neighbors{};
+   
+    int index = 0;
+    for (int xpos = -1; xpos <= 1; xpos++) {
+        for (int ypos = -1; ypos <= 1; ypos++) {
+            for (int zpos = -1; zpos <= 1; zpos++) {
+                if(xpos == 0 && ypos == 0 && zpos == 0) {
+                    continue;
+                } 
+                neighbors[index++] = world.try_get_chunk(chunk.get_position() + ChunkCoord {.x = xpos, .y=ypos,.z=zpos});
+            }
+        }
+    }
+
     const WorldCoord chunk_origin = Coords::chunk_origin(chunk.get_position());
 
     for (std::uint8_t xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
