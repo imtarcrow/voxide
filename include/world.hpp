@@ -2,11 +2,11 @@
 #ifndef VOXIDE_WORLD_HEADER
 #define VOXIDE_WORLD_HEADER
 
-#include <cstdint>
-#include <unordered_map>
-#include <optional>
-
 #include <FastNoiseLite.h>
+#include <cstdint>
+#include <optional>
+#include <unordered_map>
+
 #include "chunk.hpp"
 
 class World
@@ -18,6 +18,7 @@ private:
     std::unordered_map<std::uint64_t, std::unique_ptr<Chunk>> loaded_chunks;
 
     auto is_chunk_loaded(ChunkCoord position) const noexcept -> bool;
+
 public:
     World();
     ~World() = default;
@@ -41,9 +42,9 @@ public:
 
     [[nodiscard]] auto try_get_chunk(ChunkCoord position) const -> Chunk*;
     [[nodiscard]] auto get_chunk(ChunkCoord position) -> Chunk&;
-    
+
     [[nodiscard]] auto get_loaded_chunks() const -> const std::unordered_map<uint64_t, std::unique_ptr<Chunk>>&;
-    
+
     auto generate_chunk(ChunkCoord position) -> Chunk&;
     void generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius);
 };

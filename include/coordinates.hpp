@@ -40,8 +40,6 @@ struct ChunkCoord
 {
     int32_t x, y, z;
 
-
-
     [[nodiscard]] auto operator+(const ChunkCoord& other) const noexcept -> ChunkCoord
     {
         return ChunkCoord { .x = this->x + other.x, .y = this->y + other.y, .z = this->z + other.z };

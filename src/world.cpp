@@ -107,7 +107,7 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
     auto start = std::chrono::high_resolution_clock::now();
     for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
         for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
-            for (int ypos = -1 ;ypos < y_radius; ypos++) {
+            for (int ypos = -1; ypos < y_radius; ypos++) {
                 this->generate_chunk(center + ChunkCoord(xpos, ypos, zpos));
             }
         }
