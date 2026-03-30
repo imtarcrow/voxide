@@ -9,20 +9,18 @@
 #include "window.hpp"
 #include "world.hpp"
 
-constexpr int WINDOW_WIDTH = 1024;
-constexpr int WINDOW_HEIGHT = 768;
+constexpr int DEFAULT_WINDOW_WIDTH = 1024;
+constexpr int DEFAULT_WINDOW_HEIGHT = 768;
 
 using FrameData = struct FrameData
 {
     float delta_time;
     unsigned long last_time_ns;
-
     std::vector<float> frame_times;
 };
 
 class Engine
 {
-
 private:
     std::unique_ptr<Window> window;
     std::unique_ptr<ShaderProgram> program;
@@ -72,4 +70,3 @@ public:
     void run();
     void init();
 };
-

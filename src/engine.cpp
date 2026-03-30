@@ -48,10 +48,10 @@ void Engine::initialize_imgui() noexcept
 
 void Engine::init()
 {
-    this->window = std::make_unique<Window>("test window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
+    this->window = std::make_unique<Window>("test window", DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
-                                            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT));
+                                            static_cast<float>(DEFAULT_WINDOW_WIDTH) / static_cast<float>(DEFAULT_WINDOW_HEIGHT));
 
     this->world = std::make_unique<World>();
     this->world->generate_area(ChunkCoord(0, 0, 0), 10, 5, 10);
@@ -291,7 +291,7 @@ void Engine::run()
 
             if (chunk->is_dirty()) {
                 ChunkCoord pos = chunk->get_position();
-                spdlog::info("Regenerating chunk mesh at: {}, {}, {}", pos.x, pos.y, pos.z);
+                // spdlog::info("Regenerating chunk mesh at: {}, {}, {}", pos.x, pos.y, pos.z);
                 chunk->generate_mesh(*this->world);
                 chunk->set_dirty(false);
             }

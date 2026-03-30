@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -28,6 +29,24 @@ struct LocalCoord
         assert(pos.y >= 0 && pos.y < CHUNK_SIZE_Y && "LocalCoord y out of range");
         assert(pos.z >= 0 && pos.z < CHUNK_SIZE_Z && "LocalCoord z out of range");
         return LocalCoord { .x = static_cast<uint8_t>(pos.x), .y = static_cast<uint8_t>(pos.y), .z = static_cast<uint8_t>(pos.z) };
+    }
+
+    [[nodiscard]] static auto from_index(std::uint16_t index) noexcept -> LocalCoord
+    {
+        std::uint16_t stride = CHUNK_SIZE_Y * CHUNK_SIZE_Z;
+        std::uint16_t remainder = index % stride;
+
+        return LocalCoord {
+            .x = static_cast<std::uint8_t>(index / stride),
+            .y = static_cast<std::uint8_t>(remainder / CHUNK_SIZE_Z),
+            .z = static_cast<std::uint8_t>(remainder % CHUNK_SIZE_Z),
+        };
+    }
+
+    [[nodiscard]] auto to_index() const noexcept -> std::uint16_t
+    {
+        std::uint16_t stride = CHUNK_SIZE_Y * CHUNK_SIZE_Z;
+        return static_cast<std::uint16_t>((this->x * stride) + (this->y * CHUNK_SIZE_Z) + this->z);
     }
 
     [[nodiscard]] auto operator==(const LocalCoord& other) const noexcept -> bool
@@ -61,19 +80,6 @@ struct ChunkCoord
     }
 };
 
-struct ChunkCoordHash
-{
-    [[nodiscard]] auto operator()(const ChunkCoord& coord) const noexcept -> std::size_t
-    {
-        std::size_t hash = 0;
-        auto mix = [&](int32_t value) { hash ^= std::hash<int32_t> {}(value) + 0x9e3779b9 + (hash << 6) + (hash >> 2); };
-        mix(coord.x);
-        mix(coord.y);
-        mix(coord.z);
-        return hash;
-    }
-};
-
 struct WorldCoord
 {
     int32_t x, y, z;
@@ -97,6 +103,13 @@ struct WorldCoord
     {
         return WorldCoord { .x = this->x - other.x, .y = this->y - other.y, .z = this->z - other.z };
     }
+
+    [[nodiscard]] auto from_vec3(const glm::vec3& vec) noexcept -> WorldCoord
+    {
+        return WorldCoord { .x = static_cast<int32_t>(std::floor(vec.x)),
+                            .y = static_cast<int32_t>(std::floor(vec.y)),
+                            .z = static_cast<int32_t>(std::floor(vec.z)) };
+    }
 };
 
 namespace Coords
@@ -112,35 +125,28 @@ namespace Coords
     return first - (floor_div(first, second) * second);
 }
 
-[[nodiscard]] inline auto world_to_chunk(const WorldCoord& coord) noexcept -> ChunkCoord
+[[nodiscard]] inline auto world_to_chunk(const WorldCoord& position) noexcept -> ChunkCoord
 {
-    return ChunkCoord { .x = floor_div(coord.x, CHUNK_SIZE_X),
-                        .y = floor_div(coord.y, CHUNK_SIZE_Y),
-                        .z = floor_div(coord.z, CHUNK_SIZE_Z) };
+    return ChunkCoord { .x = floor_div(position.x, CHUNK_SIZE_X),
+                        .y = floor_div(position.y, CHUNK_SIZE_Y),
+                        .z = floor_div(position.z, CHUNK_SIZE_Z) };
 }
 
-[[nodiscard]] inline auto world_to_local(const WorldCoord& coord) noexcept -> LocalCoord
+[[nodiscard]] inline auto world_to_local(const WorldCoord& position) noexcept -> LocalCoord
 {
-    return LocalCoord::from(floor_mod(coord.x, CHUNK_SIZE_X), floor_mod(coord.y, CHUNK_SIZE_Y), floor_mod(coord.z, CHUNK_SIZE_Z));
+    return LocalCoord::from(floor_mod(position.x, CHUNK_SIZE_X), floor_mod(position.y, CHUNK_SIZE_Y), floor_mod(position.z, CHUNK_SIZE_Z));
 }
 
-[[nodiscard]] inline auto to_world(const ChunkCoord& chunk_coord, const LocalCoord& local_coord) noexcept -> WorldCoord
+[[nodiscard]] inline auto to_world(const ChunkCoord& chunk_position, const LocalCoord& local_position) noexcept -> WorldCoord
 {
-    return WorldCoord { .x = (chunk_coord.x * CHUNK_SIZE_X) + static_cast<int32_t>(local_coord.x),
-                        .y = (chunk_coord.y * CHUNK_SIZE_Y) + static_cast<int32_t>(local_coord.y),
-                        .z = (chunk_coord.z * CHUNK_SIZE_Z) + static_cast<int32_t>(local_coord.z) };
+    return WorldCoord { .x = (chunk_position.x * CHUNK_SIZE_X) + static_cast<int32_t>(local_position.x),
+                        .y = (chunk_position.y * CHUNK_SIZE_Y) + static_cast<int32_t>(local_position.y),
+                        .z = (chunk_position.z * CHUNK_SIZE_Z) + static_cast<int32_t>(local_position.z) };
 }
 
-[[nodiscard]] inline auto chunk_origin(const ChunkCoord& coord) noexcept -> WorldCoord
+[[nodiscard]] inline auto chunk_origin(const ChunkCoord& position) noexcept -> WorldCoord
 {
-    return WorldCoord { .x = coord.x * CHUNK_SIZE_X, .y = coord.y * CHUNK_SIZE_Y, .z = coord.z * CHUNK_SIZE_Z };
-}
-
-[[nodiscard]] inline auto from_vec3(const glm::vec3& vec) noexcept -> WorldCoord
-{
-    return WorldCoord { .x = static_cast<int32_t>(std::floor(vec.x)),
-                        .y = static_cast<int32_t>(std::floor(vec.y)),
-                        .z = static_cast<int32_t>(std::floor(vec.z)) };
+    return WorldCoord { .x = position.x * CHUNK_SIZE_X, .y = position.y * CHUNK_SIZE_Y, .z = position.z * CHUNK_SIZE_Z };
 }
 
 } // namespace Coords
