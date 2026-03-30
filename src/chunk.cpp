@@ -67,7 +67,7 @@ auto Chunk::get_position() const noexcept -> ChunkCoord
     return this->position;
 }
 
-auto Chunk::calculate_chunk_key(const ChunkCoord& position) noexcept -> uint64_t
+auto Chunk::calculate_hash(const ChunkCoord& position) noexcept -> uint64_t
 {
     auto xpos = static_cast<uint64_t>(static_cast<uint32_t>(position.x));
     auto ypos = static_cast<uint64_t>(static_cast<uint32_t>(position.y));
@@ -88,9 +88,9 @@ auto Chunk::calculate_chunk_key(const ChunkCoord& position) noexcept -> uint64_t
     return hash;
 }
 
-auto Chunk::get_chunk_key() const noexcept -> std::uint64_t
+auto Chunk::get_hash() const noexcept -> std::uint64_t
 {
-    return Chunk::calculate_chunk_key(this->position);
+    return Chunk::calculate_hash(this->position);
 }
 
 auto Chunk::is_empty() const noexcept -> bool

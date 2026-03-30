@@ -43,8 +43,8 @@ public:
 
     [[nodiscard]] auto get_position() const noexcept -> ChunkCoord;
 
-    static auto calculate_chunk_key(const ChunkCoord& position) noexcept -> std::uint64_t;
-    [[nodiscard]] auto get_chunk_key() const noexcept -> std::uint64_t;
+    static auto calculate_hash(const ChunkCoord& position) noexcept -> std::uint64_t;
+    [[nodiscard]] auto get_hash() const noexcept -> std::uint64_t;
 
     [[nodiscard]] auto is_dirty() const noexcept -> bool;
     void set_dirty(bool dirty) noexcept;
