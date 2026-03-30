@@ -108,7 +108,7 @@ auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 26>& neig
 auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, Direction direction, WorldCoord coord)
     -> std::array<std::uint8_t, 4>
 {
-    std::array<std::uint8_t, 4> ao_out { };
+    std::array<std::uint8_t, 4> ao_out {};
 
     for (int corner = 0; corner < 4; corner++) {
         const auto& samples = ao_lookup[direction][corner];
@@ -163,16 +163,16 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
                                                               .ambient_occlusion = ambient_occlusion[3] }));
     };
 
-    std::array<Chunk*, 26> neighbors{};
-   
+    std::array<Chunk*, 26> neighbors {};
+
     int index = 0;
     for (int xpos = -1; xpos <= 1; xpos++) {
         for (int ypos = -1; ypos <= 1; ypos++) {
             for (int zpos = -1; zpos <= 1; zpos++) {
-                if(xpos == 0 && ypos == 0 && zpos == 0) {
+                if (xpos == 0 && ypos == 0 && zpos == 0) {
                     continue;
-                } 
-                neighbors[index++] = world.try_get_chunk(chunk.get_position() + ChunkCoord {.x = xpos, .y=ypos,.z=zpos});
+                }
+                neighbors[index++] = world.try_get_chunk(chunk.get_position() + ChunkCoord { .x = xpos, .y = ypos, .z = zpos });
             }
         }
     }

@@ -7,11 +7,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "world.hpp"
 #include "camera.hpp"
 #include "chunk.hpp"
 #include "shader_program.hpp"
 #include "window.hpp"
+#include "world.hpp"
 
 constexpr int WINDOW_WIDTH = 1024;
 constexpr int WINDOW_HEIGHT = 768;
