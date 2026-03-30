@@ -1,5 +1,6 @@
 #include "world.hpp"
 
+#include <cstdint>
 #include <spdlog/spdlog.h>
 
 #include "FastNoiseLite.h"
@@ -9,7 +10,7 @@
 World::World()
 {
     this->noise_generator.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    this->noise_generator.SetSeed(1337);
+    this->noise_generator.SetSeed(this->seed);
     this->noise_generator.SetFrequency(0.02F);
 
     this->noise_generator.SetFractalType(FastNoiseLite::FractalType_FBm);
@@ -20,7 +21,7 @@ World::World()
 
 auto World::is_chunk_loaded(ChunkCoord position) const noexcept -> bool
 {
-    std::uint64_t key = Chunk::calculate_chunk_key(position);
+    std::uint64_t key = Chunk::calculate_hash(position);
     return this->loaded_chunks.contains(key);
 }
 
@@ -32,6 +33,7 @@ auto World::is_chunk_loaded(ChunkCoord position) const noexcept -> bool
 void World::set_seed(int seed) noexcept
 {
     this->seed = seed;
+    this->noise_generator.SetSeed(this->seed);
 }
 
 [[nodiscard]] auto World::try_get_block(WorldCoord position) const noexcept -> std::optional<Block>
@@ -40,7 +42,7 @@ void World::set_seed(int seed) noexcept
         return std::nullopt;
     }
 
-    const auto& chunk = this->loaded_chunks.at(Chunk::calculate_chunk_key(Coords::world_to_chunk(position)));
+    const auto& chunk = this->loaded_chunks.at(Chunk::calculate_hash(Coords::world_to_chunk(position)));
     return chunk->get_block_at(Coords::world_to_local(position));
 }
 
@@ -50,7 +52,7 @@ auto World::try_set_block(WorldCoord position, Block block) noexcept -> bool
         return false;
     }
 
-    auto& chunk = this->loaded_chunks.at(Chunk::calculate_chunk_key(Coords::world_to_chunk(position)));
+    auto& chunk = this->loaded_chunks.at(Chunk::calculate_hash(Coords::world_to_chunk(position)));
     chunk->set_block_at(Coords::world_to_local(position), block);
 
     return true;
@@ -62,7 +64,7 @@ auto World::try_set_block(WorldCoord position, Block block) noexcept -> bool
         return nullptr;
     }
 
-    auto iterator = this->loaded_chunks.find(Chunk::calculate_chunk_key(position));
+    auto iterator = this->loaded_chunks.find(Chunk::calculate_hash(position));
     if (iterator == this->loaded_chunks.end()) {
         return nullptr;
     }
@@ -77,8 +79,11 @@ auto World::get_loaded_chunks() const -> const std::unordered_map<uint64_t, std:
 
 auto World::generate_chunk(ChunkCoord position) -> Chunk&
 {
+
+    std::uint64_t hash = Chunk::calculate_hash(position);
+
     auto [iterator, has_emplaced]
-        = this->loaded_chunks.try_emplace(Chunk::calculate_chunk_key(position), std::make_unique<Chunk>(position));
+        = this->loaded_chunks.try_emplace(hash, std::make_unique<Chunk>(position));
 
     for (int xpos = 0; xpos < CHUNK_SIZE_X; xpos++) {
         for (int zpos = 0; zpos < CHUNK_SIZE_Z; zpos++) {
@@ -103,7 +108,6 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
 
 void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius)
 {
-
     auto start = std::chrono::high_resolution_clock::now();
     for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
         for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
@@ -118,24 +122,4 @@ void World::generate_area(ChunkCoord center, int x_radius, int y_radius, int z_r
     spdlog::info("Generating chunks took {}ms", duration.count());
 
     start = std::chrono::high_resolution_clock::now();
-
-    spdlog::info("generating meshes");
-    spdlog::info("loaded chunks size: {}", this->loaded_chunks.size());
-
-    // for (int xpos = -(x_radius / 2); xpos < (x_radius / 2); xpos++) {
-    //     for (int zpos = -(z_radius / 2); zpos < (z_radius / 2); zpos++) {
-    //         for (int ypos = -1; ypos < y_radius ; ypos++) {
-    //             auto* chunk = this->try_get_chunk(ChunkCoord(xpos, ypos, zpos));
-    //
-    //             if (chunk == nullptr)
-    //                 continue;
-    //
-    //             chunk->generate_mesh(*this);
-    //         }
-    //     }
-    // }
-
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    spdlog::info("Generating meshes took {}ms", duration.count());
 }
