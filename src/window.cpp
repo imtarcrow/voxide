@@ -42,7 +42,7 @@ auto Window::create_context() -> bool
     }
 
     SDL_GL_MakeCurrent(this->window_handle, context);
-    if (!SDL_GL_SetSwapInterval(1)) {
+    if (!SDL_GL_SetSwapInterval(0)) {
         spdlog::warn("Failed to enable VSync: {}", SDL_GetError());
     }
 

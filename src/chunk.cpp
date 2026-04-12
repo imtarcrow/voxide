@@ -44,10 +44,9 @@ void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
     if (current_block != block) {
         (*this->blocks)[index] = block;
 
-        if (current_block == Block::AIR && block != Block::AIR) {
+        if(block != Block::AIR && current_block == Block::AIR) {
             this->air_block_count--;
-        }
-        else if (current_block != Block::AIR && block == Block::AIR) {
+        } else if (block == Block::AIR && current_block != Block::AIR) {
             this->air_block_count++;
         }
 
