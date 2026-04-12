@@ -16,7 +16,7 @@ private:
     bool dirty = true;
 
     std::unique_ptr<std::array<Block, CHUNK_SIZE>> blocks = nullptr;
-    uint32_t air_block_count = CHUNK_SIZE;
+    std::uint16_t air_block_count = CHUNK_SIZE;
 
     std::unique_ptr<ChunkMesh> mesh = std::make_unique<ChunkMesh>();
 
