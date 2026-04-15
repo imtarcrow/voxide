@@ -49,7 +49,12 @@ find_package(OpenGL REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(spdlog REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 OpenGL::GL glm::glm spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 glm::glm spdlog::spdlog)
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "-framework OpenGL")
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
+endif()
 
 # Disable C++ Compiler extensions 
 set_target_properties(${PROJECT_NAME} PROPERTIES
