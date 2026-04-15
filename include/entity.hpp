@@ -21,7 +21,7 @@ public:
     auto operator=(const Entity&) -> Entity& = default;
     auto operator=(Entity&&) -> Entity& = delete;
 
-    virtual void tick(double delta_time);
+    virtual void tick(double delta_time) = 0;
 
     [[nodiscard]] auto get_id() const noexcept -> std::uint64_t;
 

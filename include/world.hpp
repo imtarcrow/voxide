@@ -8,6 +8,7 @@
 
 #include "chunk.hpp"
 #include "coordinates.hpp"
+#include "player.hpp"
 
 enum class WorldEventType : std::uint8_t {
     ChunkLoaded,
@@ -31,6 +32,8 @@ private:
     std::unordered_map<std::uint64_t, std::unique_ptr<Chunk>> loaded_chunks;
     std::queue<WorldEvent> events;
 
+    std::unique_ptr<Player> local_player;
+
     [[nodiscard]] auto is_chunk_loaded(ChunkCoord position) const noexcept -> bool;
     void initialize_noise_generator();
 
@@ -43,8 +46,8 @@ public:
     auto operator=(const World&) -> World& = delete;
 
     // enable moving
-    World(World&&) noexcept = default;
-    auto operator=(World&&) noexcept -> World& = default;
+    World(World&&) noexcept = delete;
+    auto operator=(World&&) noexcept -> World& = delete;
 
     void tick();
 
@@ -59,6 +62,8 @@ public:
 
     [[nodiscard]] auto get_seed() const noexcept -> int;
     void set_seed(int seed) noexcept;
+
+    auto get_local_player() noexcept -> Player*;
 
     auto get_events() -> std::queue<WorldEvent>&;
 
