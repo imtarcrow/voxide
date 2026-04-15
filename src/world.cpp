@@ -6,7 +6,11 @@
 #include "chunk.hpp"
 #include "coordinates.hpp"
 
-World::World()
+World::World(int seed) : seed(seed) {
+    initialize_noise_generator();
+}
+
+void World::initialize_noise_generator()
 {
     this->noise_generator.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     this->noise_generator.SetFrequency(0.02F);
@@ -33,7 +37,6 @@ void World::tick()
         }
     }
 }
-
 
 [[nodiscard]] auto World::try_get_block(WorldCoord position) const noexcept -> std::optional<Block>
 {
@@ -93,7 +96,8 @@ void World::set_seed(int seed) noexcept
     this->noise_generator.SetSeed(this->seed);
 }
 
-auto World::get_events() -> std::queue<WorldEvent>& {
+auto World::get_events() -> std::queue<WorldEvent>&
+{
     return this->events;
 }
 
@@ -122,7 +126,7 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
         }
     }
 
-    this->events.emplace(WorldEvent { WorldEventType::ChunkLoaded, hash, position});
+    this->events.emplace(WorldEvent { WorldEventType::ChunkLoaded, hash, position });
 
     return *iterator->second;
 }
