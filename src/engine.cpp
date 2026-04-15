@@ -49,8 +49,8 @@ void Engine::init()
 {
     this->window = std::make_unique<Window>("test window", DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 
-    this->world = std::make_unique<World>(3000);
-    this->world->generate_area(ChunkCoord(0, 0, 0), 10, 5, 10);
+    this->world = std::make_unique<World>();
+    this->world->generate_area(ChunkCoord(0, 0, 0), 30, 5, 30);
 
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
                                             static_cast<float>(DEFAULT_WINDOW_WIDTH) / static_cast<float>(DEFAULT_WINDOW_HEIGHT));

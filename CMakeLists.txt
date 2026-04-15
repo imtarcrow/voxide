@@ -27,6 +27,8 @@ set(SOURCES
     src/world.cpp
     src/stb_image.cpp
     src/world_renderer.cpp
+    src/entity.cpp
+    src/player.cpp
     
     src/glad/glad.c
 
