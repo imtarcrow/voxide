@@ -8,4 +8,3 @@ enum class Block : std::uint8_t {
     STONE = 2,
     WATER = 3,
 };
-

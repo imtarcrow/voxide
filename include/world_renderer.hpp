@@ -8,7 +8,7 @@ class WorldRenderer
 private:
     World* world;
 
-    GLuint texture_atlas_handle = 0;  
+    GLuint texture_atlas_handle = 0;
 
     std::unique_ptr<ShaderProgram> program;
     std::unordered_map<std::uint64_t, std::unique_ptr<ChunkMesh>> meshes;
@@ -19,7 +19,7 @@ private:
 public:
     WorldRenderer(World* world);
     ~WorldRenderer();
-    
+
     // disable copying
     WorldRenderer(const WorldRenderer&) = delete;
     auto operator=(const WorldRenderer&) -> WorldRenderer& = delete;

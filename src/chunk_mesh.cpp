@@ -11,7 +11,8 @@
 #include "glad/glad.h"
 #include "world.hpp"
 
-ChunkMesh::ChunkMesh(ChunkCoord position) : position(position)
+ChunkMesh::ChunkMesh(ChunkCoord position)
+    : position(position)
 {
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
@@ -108,7 +109,7 @@ auto ChunkMesh::get_block(const Chunk& chunk, const std::array<Chunk*, 26>& neig
 auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, Direction direction, WorldCoord coord)
     -> std::array<std::uint8_t, 4>
 {
-    std::array<std::uint8_t, 4> ao_out {};
+    std::array<std::uint8_t, 4> ao_out { };
 
     for (int corner = 0; corner < 4; corner++) {
         const auto& samples = ao_lookup[direction][corner];
@@ -130,7 +131,8 @@ auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 
     return ao_out;
 }
 
-[[nodiscard]] auto ChunkMesh::get_position() const noexcept -> ChunkCoord {
+[[nodiscard]] auto ChunkMesh::get_position() const noexcept -> ChunkCoord
+{
     return this->position;
 }
 
@@ -167,7 +169,7 @@ void ChunkMesh::generate(const Chunk& chunk, const World& world)
                                                               .ambient_occlusion = ambient_occlusion[3] }));
     };
 
-    std::array<Chunk*, 26> neighbors {};
+    std::array<Chunk*, 26> neighbors { };
 
     int index = 0;
     for (int xpos = -1; xpos <= 1; xpos++) {
