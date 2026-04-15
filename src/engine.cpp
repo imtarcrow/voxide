@@ -49,7 +49,7 @@ void Engine::init()
 {
     this->window = std::make_unique<Window>("test window", DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 
-    this->world = std::make_unique<World>();
+    this->world = std::make_unique<World>(3000);
     this->world->generate_area(ChunkCoord(0, 0, 0), 10, 5, 10);
 
     this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
@@ -57,29 +57,12 @@ void Engine::init()
 
     this->world_renderer = std::make_unique<WorldRenderer>(this->world.get(), this->camera.get());
 
-    this->texture_atlas_data = stbi_load("./assets/texture_atlas.png", &this->texture_atlas_width, &this->texture_atlas_height, nullptr, 0);
-
-    glGenTextures(1, &this->texture_atlas_handle);
-    glBindTexture(GL_TEXTURE_2D, this->texture_atlas_handle);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->texture_atlas_width, this->texture_atlas_height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                 this->texture_atlas_data);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-
     GLint total_mem = 0;
     GLint available_mem = 0;
-    glGetIntegerv(0x9048, &total_mem); // GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_NVX
-    glGetIntegerv(0x9049, &available_mem); // GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_NVX
+    glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &total_mem); // GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_NVX
+    glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &available_mem); // GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_NVX
+
     spdlog::info("VRAM total: {}KB available: {}KB", total_mem, available_mem);
-
-    GLint max_buffers;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, &max_buffers);
-
-    spdlog::info("Max GL Vertex attrib bindings: {}", max_buffers);
 
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
@@ -283,6 +266,4 @@ void Engine::run()
     // needed to avoid segmentation fault when force quitting
     SDL_SetWindowRelativeMouseMode(this->window->get_window_handle(), false);
 
-    glDeleteTextures(1, &this->texture_atlas_handle);
-    stbi_image_free(this->texture_atlas_data);
 }

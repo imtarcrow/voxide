@@ -32,9 +32,10 @@ private:
     std::queue<WorldEvent> events;
 
     [[nodiscard]] auto is_chunk_loaded(ChunkCoord position) const noexcept -> bool;
+    void initialize_noise_generator();
 
 public:
-    World();
+    explicit World(int seed = 0);
     ~World() = default;
 
     // disable copying
