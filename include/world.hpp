@@ -3,10 +3,24 @@
 #include <cstdint>
 #include <noise/FastNoiseLite.h>
 #include <optional>
+#include <queue>
 #include <unordered_map>
 
 #include "chunk.hpp"
 #include "coordinates.hpp"
+
+enum class WorldEventType : std::uint8_t {
+    ChunkLoaded,
+    ChunkUnloaded,
+    ChunkDirty,
+};
+
+using WorldEvent = struct WorldEvent
+{
+    WorldEventType type;
+    std::uint64_t hash;
+    ChunkCoord position;
+};
 
 class World
 {
@@ -15,6 +29,7 @@ private:
     FastNoiseLite noise_generator;
 
     std::unordered_map<std::uint64_t, std::unique_ptr<Chunk>> loaded_chunks;
+    std::queue<WorldEvent> events;
 
     [[nodiscard]] auto is_chunk_loaded(ChunkCoord position) const noexcept -> bool;
 
@@ -30,6 +45,8 @@ public:
     World(World&&) noexcept = default;
     auto operator=(World&&) noexcept -> World& = default;
 
+    void tick();
+
     [[nodiscard]] auto try_get_block(WorldCoord position) const noexcept -> std::optional<Block>;
     // [[nodiscard]] auto get_block(WorldCoord position) -> Block;
 
@@ -39,10 +56,10 @@ public:
     [[nodiscard]] auto try_get_chunk(ChunkCoord position) const -> Chunk*;
     // [[nodiscard]] auto get_chunk(ChunkCoord position) -> Chunk&;
 
-    [[nodiscard]] auto get_loaded_chunks() const -> const std::unordered_map<uint64_t, std::unique_ptr<Chunk>>&;
-
     [[nodiscard]] auto get_seed() const noexcept -> int;
     void set_seed(int seed) noexcept;
+
+    auto get_events() -> std::queue<WorldEvent>&;
 
     auto generate_chunk(ChunkCoord position) -> Chunk&;
     void generate_area(ChunkCoord center, int x_radius, int y_radius, int z_radius);

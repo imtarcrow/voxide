@@ -26,6 +26,7 @@ set(SOURCES
     src/chunk_mesh.cpp
     src/world.cpp
     src/stb_image.cpp
+    src/world_renderer.cpp
     
     src/glad/glad.c
 

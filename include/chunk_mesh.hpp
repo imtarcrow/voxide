@@ -98,6 +98,8 @@ private:
 
     GLsizei index_count = 0;
 
+    ChunkCoord position;
+
     [[nodiscard]] auto pack_vertex_data(VertexData data) const noexcept -> std::uint32_t;
 
     auto get_block(const Chunk& chunk, const std::array<Chunk*, 26>& neighbors, WorldCoord coord) -> Block;
@@ -106,7 +108,7 @@ private:
         -> std::array<std::uint8_t, 4>;
 
 public:
-    ChunkMesh();
+    ChunkMesh(ChunkCoord position);
     ~ChunkMesh();
 
     // disable copying
@@ -116,6 +118,8 @@ public:
     // enable moving
     ChunkMesh(ChunkMesh&&) noexcept;
     auto operator=(ChunkMesh&&) noexcept -> ChunkMesh&;
+
+    [[nodiscard]] auto get_position() const noexcept -> ChunkCoord;
 
     void generate(const Chunk& chunk, const World& world);
     void render() const noexcept;

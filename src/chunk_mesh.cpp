@@ -11,7 +11,7 @@
 #include "glad/glad.h"
 #include "world.hpp"
 
-ChunkMesh::ChunkMesh()
+ChunkMesh::ChunkMesh(ChunkCoord position) : position(position)
 {
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
@@ -128,6 +128,10 @@ auto ChunkMesh::generate_ao_values(const Chunk& chunk, const std::array<Chunk*, 
             = (is_solid(side1) && is_solid(side2)) ? 3 : static_cast<uint8_t>(is_solid(side1) + is_solid(side2) + is_solid(diagonal));
     }
     return ao_out;
+}
+
+[[nodiscard]] auto ChunkMesh::get_position() const noexcept -> ChunkCoord {
+    return this->position;
 }
 
 void ChunkMesh::generate(const Chunk& chunk, const World& world)

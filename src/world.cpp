@@ -1,7 +1,6 @@
 #include "world.hpp"
 
 #include <cstdint>
-#include <noise/FastNoiseLite.h>
 #include <spdlog/spdlog.h>
 
 #include "chunk.hpp"
@@ -24,6 +23,17 @@ auto World::is_chunk_loaded(ChunkCoord position) const noexcept -> bool
     std::uint64_t hash = Chunk::calculate_hash(position);
     return this->loaded_chunks.contains(hash);
 }
+
+void World::tick()
+{
+    for (const auto& entry : this->loaded_chunks) {
+        if (entry.second->is_dirty()) {
+            events.emplace(WorldEvent { WorldEventType::ChunkDirty, entry.first, entry.second->get_position() });
+            entry.second->set_dirty(false);
+        }
+    }
+}
+
 
 [[nodiscard]] auto World::try_get_block(WorldCoord position) const noexcept -> std::optional<Block>
 {
@@ -55,6 +65,7 @@ auto World::try_set_block(WorldCoord position, Block block) noexcept -> bool
     return true;
 }
 
+/* non owning pointer is being returned, should be discarded right after use */
 [[nodiscard]] auto World::try_get_chunk(ChunkCoord position) const -> Chunk*
 {
     if (!this->is_chunk_loaded(position)) {
@@ -71,11 +82,6 @@ auto World::try_set_block(WorldCoord position, Block block) noexcept -> bool
     return iterator->second.get();
 }
 
-auto World::get_loaded_chunks() const -> const std::unordered_map<uint64_t, std::unique_ptr<Chunk>>&
-{
-    return this->loaded_chunks;
-}
-
 [[nodiscard]] auto World::get_seed() const noexcept -> int
 {
     return this->seed;
@@ -85,6 +91,10 @@ void World::set_seed(int seed) noexcept
 {
     this->seed = seed;
     this->noise_generator.SetSeed(this->seed);
+}
+
+auto World::get_events() -> std::queue<WorldEvent>& {
+    return this->events;
 }
 
 auto World::generate_chunk(ChunkCoord position) -> Chunk&
@@ -111,6 +121,8 @@ auto World::generate_chunk(ChunkCoord position) -> Chunk&
             }
         }
     }
+
+    this->events.emplace(WorldEvent { WorldEventType::ChunkLoaded, hash, position});
 
     return *iterator->second;
 }

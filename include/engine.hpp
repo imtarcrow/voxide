@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "camera.hpp"
-#include "shader_program.hpp"
 #include "window.hpp"
 #include "world.hpp"
+#include "world_renderer.hpp"
 
 constexpr int DEFAULT_WINDOW_WIDTH = 1024;
 constexpr int DEFAULT_WINDOW_HEIGHT = 768;
@@ -23,9 +23,10 @@ class Engine
 {
 private:
     std::unique_ptr<Window> window;
-    std::unique_ptr<ShaderProgram> program;
-    std::unique_ptr<Camera> camera;
     std::unique_ptr<World> world;
+
+    std::unique_ptr<Camera> camera;
+    std::unique_ptr<WorldRenderer> world_renderer;
 
     FrameData frame_data;
     float total_time_passed = 0.0F;

@@ -1,13 +1,8 @@
 #include "chunk.hpp"
 
-#include <cstdint>
-#include <noise/FastNoiseLite.h>
-#include <glm/ext/matrix_transform.hpp>
-#include <memory>
-#include <spdlog/spdlog.h>
-
 #include "block.hpp"
 #include "chunk_mesh.hpp"
+#include "coordinates.hpp"
 
 void Chunk::initialize_block_array()
 {
@@ -92,11 +87,6 @@ auto Chunk::get_hash() const noexcept -> std::uint64_t
     return Chunk::calculate_hash(this->position);
 }
 
-auto Chunk::is_empty() const noexcept -> bool
-{
-    return this->blocks == nullptr;
-}
-
 auto Chunk::is_dirty() const noexcept -> bool
 {
     return this->dirty;
@@ -107,12 +97,6 @@ void Chunk::set_dirty(bool dirty) noexcept
     this->dirty = dirty;
 }
 
-void Chunk::generate_mesh(const World& world)
-{
-    this->mesh->generate(*this, world);
-}
-
-void Chunk::render() const noexcept
-{
-    this->mesh->render();
+auto Chunk::is_empty() const noexcept -> bool {
+   return this->air_block_count == CHUNK_SIZE;
 }
