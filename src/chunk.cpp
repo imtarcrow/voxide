@@ -39,9 +39,10 @@ void Chunk::set_block_at(LocalCoord position, Block block, bool supress_dirty)
     if (current_block != block) {
         (*this->blocks)[index] = block;
 
-        if(block != Block::AIR && current_block == Block::AIR) {
+        if (block != Block::AIR && current_block == Block::AIR) {
             this->air_block_count--;
-        } else if (block == Block::AIR && current_block != Block::AIR) {
+        }
+        else if (block == Block::AIR && current_block != Block::AIR) {
             this->air_block_count++;
         }
 
@@ -97,6 +98,7 @@ void Chunk::set_dirty(bool dirty) noexcept
     this->dirty = dirty;
 }
 
-auto Chunk::is_empty() const noexcept -> bool {
-   return this->air_block_count == CHUNK_SIZE;
+auto Chunk::is_empty() const noexcept -> bool
+{
+    return this->air_block_count == CHUNK_SIZE;
 }

@@ -1,7 +1,9 @@
 #include "player.hpp"
 
-Player::Player(bool local) : local(local) {
-    if(local) {
+Player::Player(bool local)
+    : local(local)
+{
+    if (local) {
         this->camera.emplace(this->position, this->yaw, this->pitch);
     }
 }

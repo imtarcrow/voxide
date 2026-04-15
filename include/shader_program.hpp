@@ -35,4 +35,3 @@ public:
     auto reload() -> bool;
     void set_uniform(const std::string& name, glm::mat4 value) const;
 };
-

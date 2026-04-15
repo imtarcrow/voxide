@@ -16,35 +16,36 @@ WorldRenderer::WorldRenderer(World* world)
     this->load_texture_atlas();
 }
 
-WorldRenderer::~WorldRenderer() {
+WorldRenderer::~WorldRenderer()
+{
     glDeleteTextures(1, &this->texture_atlas_handle);
 }
 
-auto WorldRenderer::load_texture_atlas() -> bool {
+auto WorldRenderer::load_texture_atlas() -> bool
+{
     int atlas_width = 0;
     int atlas_height = 0;
     unsigned char* atlas_data = stbi_load("./assets/texture_atlas.png", &atlas_width, &atlas_height, nullptr, 0);
 
-    if(atlas_data == nullptr) {
+    if (atlas_data == nullptr) {
         spdlog::warn("Failed to load texture atlas file");
         return false;
     }
 
-    //generate texture if it does not exist
-    if(this->texture_atlas_handle == 0) {
+    // generate texture if it does not exist
+    if (this->texture_atlas_handle == 0) {
         glGenTextures(1, &this->texture_atlas_handle);
-    } 
+    }
 
     glBindTexture(GL_TEXTURE_2D, this->texture_atlas_handle);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, atlas_width, atlas_height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                 atlas_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, atlas_width, atlas_height, 0, GL_RGB, GL_UNSIGNED_BYTE, atlas_data);
 
     glGenerateMipmap(GL_TEXTURE_2D);
-    
+
     stbi_image_free(atlas_data);
     return true;
 }
@@ -104,6 +105,7 @@ void WorldRenderer::render()
     }
 }
 
-auto WorldRenderer::reload_texture_atlas() -> bool {
+auto WorldRenderer::reload_texture_atlas() -> bool
+{
     return this->load_texture_atlas();
 }

@@ -69,4 +69,3 @@ public:
 
     [[nodiscard]] auto get_vsync_mode() const noexcept -> int;
 };
-

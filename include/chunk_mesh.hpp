@@ -1,11 +1,9 @@
 #pragma once
 #include <array>
+#include <glm/glm.hpp>
 
 #include "block.hpp"
 #include "coordinates.hpp"
-
-#include <glm/glm.hpp>
-
 #include "glad/glad.h"
 
 class Chunk;
@@ -124,4 +122,3 @@ public:
     void generate(const Chunk& chunk, const World& world);
     void render() const noexcept;
 };
-

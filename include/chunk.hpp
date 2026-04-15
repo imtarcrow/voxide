@@ -46,4 +46,3 @@ public:
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
 };
-

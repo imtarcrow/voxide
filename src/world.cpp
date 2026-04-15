@@ -8,7 +8,9 @@
 #include "coordinates.hpp"
 #include "player.hpp"
 
-World::World(int seed) : seed(seed) {
+World::World(int seed)
+    : seed(seed)
+{
     this->local_player = std::make_unique<Player>(true);
     initialize_noise_generator();
 }
@@ -99,7 +101,8 @@ void World::set_seed(int seed) noexcept
     this->noise_generator.SetSeed(this->seed);
 }
 
-auto World::get_local_player() noexcept -> Player* {
+auto World::get_local_player() noexcept -> Player*
+{
     return this->local_player.get();
 }
 

@@ -265,5 +265,4 @@ void Engine::run()
 
     // needed to avoid segmentation fault when force quitting
     SDL_SetWindowRelativeMouseMode(this->window->get_window_handle(), false);
-
 }
