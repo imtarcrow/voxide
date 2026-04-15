@@ -45,7 +45,6 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ./include ./include/imgui ./include/imgui/backends)
 
 find_package(SDL3 REQUIRED CONFIG)
-find_package(OpenGL REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(spdlog REQUIRED)
 
@@ -53,6 +52,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 glm::glm spdlog::spdlog
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE "-framework OpenGL")
 else()
+    find_package(OpenGL REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 endif()
 
