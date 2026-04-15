@@ -2,7 +2,7 @@
 
 Player::Player(bool local) : local(local) {
     if(local) {
-        camera = Camera {this->position, this->yaw, this->pitch };
+        this->camera.emplace(this->position, this->yaw, this->pitch);
     }
 }
 
@@ -20,5 +20,4 @@ auto Player::get_camera() noexcept -> Camera*
 
 void Player::tick(double delta_time)
 {
-
 }

@@ -8,9 +8,8 @@
 
 #include "world.hpp"
 
-WorldRenderer::WorldRenderer(World* world, Camera* camera)
+WorldRenderer::WorldRenderer(World* world)
     : world(world)
-    , camera(camera)
 {
     this->program = std::make_unique<ShaderProgram>("./assets/shader/vertex.glsl", "./assets/shader/fragment.glsl");
 
@@ -86,8 +85,10 @@ void WorldRenderer::render()
         spdlog::error("Failed to use Shader Program");
     }
 
-    this->program->set_uniform("view", this->camera->get_view_matrix());
-    this->program->set_uniform("projection", this->camera->get_projection_matrix());
+    Camera* camera = this->world->get_local_player()->get_camera();
+
+    this->program->set_uniform("view", camera->get_view_matrix());
+    this->program->set_uniform("projection", camera->get_projection_matrix());
 
     for (auto& entry : this->meshes) {
 

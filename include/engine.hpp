@@ -4,7 +4,6 @@
 #include <stb_image.h>
 #include <vector>
 
-#include "camera.hpp"
 #include "window.hpp"
 #include "world.hpp"
 #include "world_renderer.hpp"
@@ -25,7 +24,6 @@ private:
     std::unique_ptr<Window> window;
     std::unique_ptr<World> world;
 
-    std::unique_ptr<Camera> camera;
     std::unique_ptr<WorldRenderer> world_renderer;
 
     FrameData frame_data;

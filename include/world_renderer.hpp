@@ -1,5 +1,4 @@
 #pragma once
-#include "camera.hpp"
 #include "shader_program.hpp"
 #include "world.hpp"
 
@@ -8,7 +7,6 @@ class WorldRenderer
 
 private:
     World* world;
-    Camera* camera;
 
     GLuint texture_atlas_handle = 0;  
 
@@ -19,7 +17,7 @@ private:
     void process_events();
 
 public:
-    WorldRenderer(World* world, Camera* camera);
+    WorldRenderer(World* world);
     ~WorldRenderer();
     
     // disable copying
