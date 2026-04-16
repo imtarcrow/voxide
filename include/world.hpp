@@ -10,6 +10,7 @@
 #include "coordinates.hpp"
 #include "player.hpp"
 
+
 enum class WorldEventType : std::uint8_t {
     ChunkLoaded,
     ChunkUnloaded,

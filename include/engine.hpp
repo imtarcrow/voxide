@@ -47,8 +47,6 @@ private:
 
     void process_events() noexcept;
 
-    void handle_movement(float delta_time) noexcept;
-
 public:
     Engine();
     ~Engine();

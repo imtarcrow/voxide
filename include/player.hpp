@@ -1,6 +1,6 @@
 #pragma once
 
-#include <entity.hpp>
+#include "entity.hpp"
 #include <optional>
 
 #include "camera.hpp"
@@ -17,5 +17,5 @@ public:
     [[nodiscard]] auto is_local() const noexcept -> bool;
     [[nodiscard]] auto get_camera() noexcept -> Camera*;
 
-    void tick(double delta_time) override;
+    void tick(float delta_time) override;
 };
