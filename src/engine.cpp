@@ -52,9 +52,6 @@ void Engine::init()
     this->world = std::make_unique<World>();
     this->world->generate_area(ChunkCoord(0, 0, 0), 10, 3, 10);
 
-    // this->camera = std::make_unique<Camera>(glm::vec3(0.0F, 30.0F, 0.0F), 0.0F, 0.0F, 90.0F,
-    //                                         static_cast<float>(DEFAULT_WINDOW_WIDTH) / static_cast<float>(DEFAULT_WINDOW_HEIGHT));
-
     this->world_renderer = std::make_unique<WorldRenderer>(this->world.get());
 
     GLint total_mem = 0;
@@ -70,51 +67,6 @@ void Engine::init()
 
     this->window->set_capturing_mouse(true);
     this->initialize_imgui();
-}
-
-void Engine::handle_movement(float delta_time) noexcept
-{
-    const bool* keys = SDL_GetKeyboardState(nullptr);
-
-    const float sensitivity = 20.0F;
-
-    // if (keys[SDL_SCANCODE_LEFT]) {
-    //     this->camera->handle_look_input(-1000.0F * delta_time, 0.0F * delta_time, true);
-    // }
-    // if (keys[SDL_SCANCODE_RIGHT]) {
-    //     this->camera->handle_look_input(1000.0F * delta_time, 0.0F * delta_time, true);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_UP]) {
-    //     this->camera->handle_look_input(0.0F * delta_time, 1000.0F * delta_time, true);
-    // }
-    // if (keys[SDL_SCANCODE_DOWN]) {
-    //     this->camera->handle_look_input(0.0F * delta_time, -1000.0F * delta_time, true);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_W]) {
-    //     this->camera->set_position(this->camera->get_position() + this->camera->get_front_vector() * sensitivity * delta_time);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_S]) {
-    //     this->camera->set_position(this->camera->get_position() - this->camera->get_front_vector() * sensitivity * delta_time);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_D]) {
-    //     this->camera->set_position(this->camera->get_position() + this->camera->get_right_vector() * sensitivity * delta_time);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_A]) {
-    //     this->camera->set_position(this->camera->get_position() - this->camera->get_right_vector() * sensitivity * delta_time);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_SPACE]) {
-    //     this->camera->set_position(this->camera->get_position() + glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
-    // }
-    //
-    // if (keys[SDL_SCANCODE_LSHIFT]) {
-    //     this->camera->set_position(this->camera->get_position() - glm::vec3(0.0, 1.0, 0.0) * sensitivity * delta_time);
-    // }
 }
 
 void Engine::update_frametimes() noexcept
@@ -158,15 +110,15 @@ void Engine::process_events() noexcept
             this->window->handle_event(event.window);
         }
 
-        // if (event.type == SDL_EVENT_MOUSE_MOTION && this->window->is_capturing_mouse()) {
-        //     this->camera->handle_look_input(event.motion.xrel, -event.motion.yrel, true);
-        // }
+        if (event.type == SDL_EVENT_MOUSE_MOTION && this->window->is_capturing_mouse()) {
+            this->world->get_local_player()->get_camera()->handle_look_input(event.motion.xrel, -event.motion.yrel, true);
+        }
         if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
             this->window->set_capturing_mouse(!this->window->is_capturing_mouse());
         }
-        // if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-        //     this->camera->set_aspect_ratio(static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2));
-        // }
+        if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+            this->world->get_local_player()->get_camera()->set_aspect_ratio(static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2));
+        }
 
         if (event.type == SDL_EVENT_QUIT) {
             this->should_quit = true;
@@ -207,14 +159,16 @@ void Engine::run()
         this->process_events();
 
         if (this->window->is_capturing_mouse()) {
-            this->handle_movement(this->frame_data.delta_time);
+            this->world->get_local_player()->tick(this->frame_data.delta_time );
         }
 
         ImGui::Begin("Info", nullptr, 0);
 
-        // glm::vec3 camera_position = this->camera->get_position();
-        // ImGui::Text("Position: X: %.2f Y: %.2f Z: %.2f", camera_position.x, camera_position.y, camera_position.z);
-        // ImGui::Text("Orientation: Yaw: %.2f Pitch: %.2f", this->camera->get_yaw(), this->camera->get_pitch());
+        Player* player = this->world->get_local_player();
+        Camera* camera = player->get_camera();
+        glm::vec3 position = camera->get_position();
+        ImGui::Text("Position: X: %.2f Y: %.2f Z: %.2f", position.x, position.y, position.z);
+        ImGui::Text("Orientation: Yaw: %.2f Pitch: %.2f", camera->get_yaw(), camera->get_pitch());
         ImGui::End();
 
         if (!this->window->is_capturing_mouse()) {
@@ -222,7 +176,6 @@ void Engine::run()
             ImGui::Checkbox("Wireframe", &this->checkbox_is_ticked);
 
             if (this->checkbox_is_ticked != this->checkbox_was_ticked) {
-
                 if (this->checkbox_is_ticked) {
                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                 }

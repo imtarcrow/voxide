@@ -64,11 +64,11 @@ auto Chunk::get_position() const noexcept -> ChunkCoord
 
 auto Chunk::calculate_hash(const ChunkCoord& position) noexcept -> uint64_t
 {
-    auto xpos = static_cast<uint64_t>(static_cast<uint32_t>(position.x));
-    auto ypos = static_cast<uint64_t>(static_cast<uint32_t>(position.y));
-    auto zpos = static_cast<uint64_t>(static_cast<uint32_t>(position.z));
+    auto xpos = static_cast<std::uint64_t>(static_cast<std::uint32_t>(position.x));
+    auto ypos = static_cast<std::uint64_t>(static_cast<std::uint32_t>(position.y));
+    auto zpos = static_cast<std::uint64_t>(static_cast<std::uint32_t>(position.z));
 
-    uint64_t hash = 0;
+    std::uint64_t hash = 0;
 
     hash ^= xpos * 0x9E3779B185EBCA87ULL;
     hash ^= ypos * 0xC2B2AE3D27D4EB4FULL;
