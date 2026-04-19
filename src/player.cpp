@@ -2,11 +2,13 @@
 
 #include <SDL3/SDL_keyboard.h>
 
+#include "camera.hpp"
+
 Player::Player(bool local)
     : local(local)
 {
     if (local) {
-        this->camera.emplace(this->position, this->yaw, this->pitch);
+        this->camera.emplace(this->position, this->yaw, this->pitch, 77.0F);
     }
 }
 
