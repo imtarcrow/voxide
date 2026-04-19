@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.31.10)
 
 project("voxide" VERSION 0.0.1 LANGUAGES C CXX)
 
+message("Building in ${CMAKE_BUILD_TYPE} mode")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,9 +12,9 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set_source_files_properties(
-    src/glad.c
+    src/glad/glad.c
     PROPERTIES
-    COMPILE_OPTIONS "-w"
+    COMPILE_FLAGS "-Wno-pedantic"
 )
 
 # Setup project files

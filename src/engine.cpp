@@ -18,7 +18,6 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-#include "chunk.hpp"
 #include "glad/glad.h"
 
 Engine::Engine()
@@ -54,13 +53,6 @@ void Engine::init()
 
     this->world_renderer = std::make_unique<WorldRenderer>(this->world.get());
 
-    GLint total_mem = 0;
-    GLint available_mem = 0;
-    glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &total_mem); // GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_NVX
-    glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &available_mem); // GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_NVX
-
-    spdlog::info("VRAM total: {}KB available: {}KB", total_mem, available_mem);
-
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -71,27 +63,28 @@ void Engine::init()
 
 void Engine::update_frametimes() noexcept
 {
-    this->frame_data.delta_time = static_cast<float>((SDL_GetTicksNS() - this->frame_data.last_time_ns)) / 1000000000.0F;
+
+    this->frame_data.delta_time = static_cast<double>((SDL_GetTicksNS() - this->frame_data.last_time_ns)) / 1000000000.0;
     this->frame_data.last_time_ns = SDL_GetTicksNS();
-    this->frame_data.frame_times.push_back(this->frame_data.delta_time);
+    this->frame_data.recent_frame_times.push_back(this->frame_data.delta_time);
 
     this->total_time_passed += this->frame_data.delta_time;
     this->time_since_last_log += this->frame_data.delta_time;
 
-    this->window->set_title(std::format("test window | {:.2f}s", this->total_time_passed));
+    this->window->set_title(std::format("test window | {:.4}s", this->total_time_passed));
 
-    if (this->time_since_last_log > 5.0F) {
-        float average_frame_time = 0.0F;
-        for (auto it = this->frame_data.frame_times.begin(); it <= this->frame_data.frame_times.end(); it++) {
+    if (this->time_since_last_log > 5.0) {
+        double average_frame_time = 0.0;
+        for (auto it = this->frame_data.recent_frame_times.begin(); it <= this->frame_data.recent_frame_times.end(); it++) {
             average_frame_time += *it;
         }
 
-        average_frame_time /= static_cast<float>(this->frame_data.frame_times.size());
+        average_frame_time /= static_cast<double>(this->frame_data.recent_frame_times.size());
 
-        spdlog::trace("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.frame_times.size(),
+        spdlog::debug("{} frames rendered in 5.0 seconds. average frametime: {:.4f}, FPS: {}", this->frame_data.recent_frame_times.size(),
                       average_frame_time, 1 / average_frame_time);
         this->time_since_last_log -= 5.0F;
-        this->frame_data.frame_times.clear();
+        this->frame_data.recent_frame_times.clear();
     }
 }
 
@@ -117,7 +110,8 @@ void Engine::process_events() noexcept
             this->window->set_capturing_mouse(!this->window->is_capturing_mouse());
         }
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            this->world->get_local_player()->get_camera()->set_aspect_ratio(static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2));
+            this->world->get_local_player()->get_camera()->set_aspect_ratio(static_cast<float>(event.window.data1)
+                                                                            / static_cast<float>(event.window.data2));
         }
 
         if (event.type == SDL_EVENT_QUIT) {
@@ -149,7 +143,6 @@ void Engine::end_frame() noexcept
 
 void Engine::run()
 {
-
     this->frame_data.last_time_ns = SDL_GetTicksNS();
 
     while (!this->should_quit) {
@@ -159,7 +152,7 @@ void Engine::run()
         this->process_events();
 
         if (this->window->is_capturing_mouse()) {
-            this->world->get_local_player()->tick(this->frame_data.delta_time );
+            this->world->get_local_player()->tick(this->frame_data.delta_time);
         }
 
         ImGui::Begin("Info", nullptr, 0);
@@ -167,7 +160,7 @@ void Engine::run()
         Player* player = this->world->get_local_player();
         Camera* camera = player->get_camera();
         glm::vec3 position = camera->get_position();
-        ImGui::Text("Position: X: %.2f Y: %.2f Z: %.2f", position.x, position.y, position.z);
+        ImGui::Text("Position: X: %.4f Y: %.4f Z: %.4f", position.x, position.y, position.z);
         ImGui::Text("Orientation: Yaw: %.2f Pitch: %.2f", camera->get_yaw(), camera->get_pitch());
         ImGui::End();
 
@@ -186,23 +179,6 @@ void Engine::run()
                 this->checkbox_was_ticked = this->checkbox_is_ticked;
             }
 
-            ImGui::Checkbox("Block", &this->checkbox2_is_ticked);
-            if (this->checkbox2_is_ticked != this->checkbox2_was_ticked) {
-                Chunk* chunk = this->world->try_get_chunk(ChunkCoord { .x = 0, .y = 3, .z = 0 });
-                if (this->checkbox2_is_ticked) {
-                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::STONE);
-                }
-                else {
-                    chunk->set_block_at(LocalCoord::from(8, 16, 8), Block::AIR);
-                }
-                this->checkbox2_was_ticked = this->checkbox2_is_ticked;
-            }
-
-            bool value = ImGui::Button("Is dirty?");
-            if (value) {
-                Chunk* chunk = this->world->try_get_chunk(ChunkCoord { .x = 0, .y = 3, .z = 0 });
-                spdlog::info("Is dirty: {}", chunk->is_dirty());
-            }
             ImGui::End();
         }
 

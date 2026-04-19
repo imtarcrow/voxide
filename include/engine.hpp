@@ -8,14 +8,14 @@
 #include "world.hpp"
 #include "world_renderer.hpp"
 
-constexpr int DEFAULT_WINDOW_WIDTH = 1024;
-constexpr int DEFAULT_WINDOW_HEIGHT = 768;
+constexpr int DEFAULT_WINDOW_WIDTH = 1920;
+constexpr int DEFAULT_WINDOW_HEIGHT = 1080;
 
 using FrameData = struct FrameData
 {
-    float delta_time;
+    double delta_time;
     unsigned long last_time_ns;
-    std::vector<float> frame_times;
+    std::vector<double> recent_frame_times;
 };
 
 class Engine
@@ -27,14 +27,11 @@ private:
     std::unique_ptr<WorldRenderer> world_renderer;
 
     FrameData frame_data;
-    float total_time_passed = 0.0F;
-    float time_since_last_log = 0.0F;
+    double total_time_passed = 0.0F;
+    double time_since_last_log = 0.0F;
 
     bool checkbox_is_ticked = false;
     bool checkbox_was_ticked = false;
-
-    bool checkbox2_is_ticked = false;
-    bool checkbox2_was_ticked = false;
 
     bool should_quit = false;
 

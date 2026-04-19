@@ -1,9 +1,9 @@
 #pragma once
 
-#include "entity.hpp"
 #include <optional>
 
 #include "camera.hpp"
+#include "entity.hpp"
 
 class Player: Entity
 {
